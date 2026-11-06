@@ -226,6 +226,8 @@
   <a href="#type-mapping">Campaign Types</a>
   <a href="#new-hires">New Hires</a>
   <a href="#dashboard-features">Dashboard Features</a>
+  <a href="#salesforce-report">Salesforce Report</a>
+  <a href="#known-issues">Known Issues</a>
   <a href="#talking-points">Talking Points</a>
   <a href="#faq">FAQ</a>
 </nav>
@@ -247,6 +249,8 @@
     <a href="#type-mapping" class="toc-item">Campaign Types<span>How types map to colors</span></a>
     <a href="#new-hires" class="toc-item">New Hire Logic<span>Ramp + pro-rated targets</span></a>
     <a href="#dashboard-features" class="toc-item">Dashboard Features<span>Filters, drilldowns, modals</span></a>
+    <a href="#salesforce-report" class="toc-item">Salesforce Report<span>Filters, structure, known limits</span></a>
+    <a href="#known-issues" class="toc-item">Known Issues<span>APAC/LATAM data gap</span></a>
     <a href="#talking-points" class="toc-item">Talking Points<span>How to tell the story</span></a>
   </div>
 
@@ -574,6 +578,38 @@
     <li>Respects the New Hires toggle — when Removed, new hires are excluded from the team table and all team KPIs</li>
   </ul>
 
+  <h3>By Cloud tab</h3>
+  <p>Shows utilization hours broken out by Salesforce cloud/product, using official Salesforce brand colors. The tab has <strong>four sub-view buttons</strong> in the top-right corner:</p>
+  <table>
+    <tr><th>Sub-view</th><th>What it shows</th></tr>
+    <tr><td><strong>By Cloud</strong></td><td>One bar per cloud, sorted by total hours descending. Each bar is split: solid fill = Course hours, faded (semi-transparent) fill = Workshop hours.</td></tr>
+    <tr><td><strong>By Instructor</strong></td><td>One bar per instructor, colored by their primary cloud. Solid = Course, faded = Workshop.</td></tr>
+    <tr><td><strong>By Region</strong></td><td>One bar per region (AMER, EMEA, APAC, LATAM), broken out by cloud. Same Course/Workshop split coloring.</td></tr>
+    <tr><td><strong>By Manager</strong></td><td>One bar per manager, broken out by cloud. Managers with no AMER campaign data show a "No AMER campaign data" placeholder — this is expected for APAC/LATAM managers whose instructors' campaigns are not in the AMER export (see <a href="#known-issues">Known Issues</a>).</td></tr>
+  </table>
+  <div class="callout blue">
+    <p><strong>Course vs Workshop split:</strong> Workshop types (<code>W</code> = Workshop, <code>PW</code> = Private Workshop) are shown faded; all other types (Public, Bootcamp, Internal) are shown solid. This lets you see at a glance how much of a cloud's volume comes from workshops vs. standard courses.</p>
+  </div>
+  <div class="callout amber">
+    <p><strong>Data scope note:</strong> By Cloud data comes from the AMER Salesforce campaign export only. EMEA, APAC, and LATAM campaign hours are not included in the By Cloud views. See <a href="#known-issues">Known Issues</a> for details.</p>
+  </div>
+
+  <h4>Cloud brand colors</h4>
+  <table>
+    <tr><th>Cloud</th><th>Color</th><th>Hex</th></tr>
+    <tr><td>Agentforce</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#066afe;vertical-align:middle;margin-right:6px"></span>Blue</td><td><code>#066afe</code></td></tr>
+    <tr><td>Data Cloud</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2f2cb7;vertical-align:middle;margin-right:6px"></span>Indigo</td><td><code>#2f2cb7</code></td></tr>
+    <tr><td>Tableau</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e8762c;vertical-align:middle;margin-right:6px"></span>Orange</td><td><code>#e8762c</code></td></tr>
+    <tr><td>MuleSoft</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7f45d4;vertical-align:middle;margin-right:6px"></span>Purple</td><td><code>#7f45d4</code></td></tr>
+    <tr><td>Platform</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7f8ced;vertical-align:middle;margin-right:6px"></span>Slate blue</td><td><code>#7f8ced</code></td></tr>
+    <tr><td>Revenue Cloud</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#c8223e;vertical-align:middle;margin-right:6px"></span>Red</td><td><code>#c8223e</code></td></tr>
+    <tr><td>Marketing Cloud</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#fe9339;vertical-align:middle;margin-right:6px"></span>Amber</td><td><code>#fe9339</code></td></tr>
+    <tr><td>Commerce Cloud</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2e844a;vertical-align:middle;margin-right:6px"></span>Green</td><td><code>#2e844a</code></td></tr>
+    <tr><td>Slack</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#41b658;vertical-align:middle;margin-right:6px"></span>Light green</td><td><code>#41b658</code></td></tr>
+    <tr><td>Industries</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#b56800;vertical-align:middle;margin-right:6px"></span>Brown</td><td><code>#b56800</code></td></tr>
+    <tr><td>Other</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#898781;vertical-align:middle;margin-right:6px"></span>Gray</td><td><code>#898781</code></td></tr>
+  </table>
+
   <h3>By Instructor tab</h3>
   <p>Searchable, filterable table of all active instructors. Columns: name, region, manager, hours by type, total, % of target, pace indicator. Sortable by any column. Filterable by <strong>name search</strong>, <strong>region dropdown</strong>, and <strong>manager dropdown</strong>. <strong>Click an instructor name</strong> to open their detail modal.</p>
 
@@ -619,6 +655,121 @@
     <tr><td>Sort (column headers)</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
     <tr><td>Dark / Light mode</td><td>Header bar</td><td>Visual only</td></tr>
   </table>
+</section>
+
+<!-- ─── SALESFORCE REPORT ──────────────────────────────────────────────────── -->
+<section id="salesforce-report">
+  <h2>Salesforce Report — FY27 NEW Delivery Util report*</h2>
+  <p>The source data for the dashboard is pulled from a Salesforce report in the T&amp;C org. This section documents the report's structure and the filter logic used to select the right instructors.</p>
+
+  <h3>Report metadata</h3>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td><strong>Report name</strong></td><td>FY27 NEW Delivery Util report*</td></tr>
+    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003ndmTUAQ</code></td></tr>
+    <tr><td><strong>Report type</strong></td><td>Campaigns with Contacts with User (<code>Campaigns_with_Contacts_with_User__c</code>) — custom report type that joins Campaign → Contact → User via Campaign Owner</td></tr>
+  </table>
+
+  <h3>Filter structure (16 filters)</h3>
+  <p>The report uses <strong>Boolean logic</strong>: <code>1 AND 2 AND 3 AND 4 AND 5 AND 6 AND 7 AND 8 AND 9 AND (10 OR 11 OR 12 OR 13 OR 14 OR 15 OR 16)</code>.</p>
+  <p>Filters 1–9 are base criteria that apply to all records. Filters 10–16 are one-per-manager-group name filters — a campaign record must match <em>at least one</em> of these to be included.</p>
+
+  <table>
+    <tr><th>#</th><th>Field</th><th>Operator</th><th>Value / Purpose</th></tr>
+    <tr><td>1</td><td><code>Contact.Instructor_Status__c</code></td><td>equals</td><td>Certified Instructor</td></tr>
+    <tr><td>2</td><td><code>User.IsActive</code></td><td>equals</td><td>True</td></tr>
+    <tr><td>3</td><td><code>Campaign.StartDate</code></td><td>≥</td><td>2026-02-01 (FY27 start)</td></tr>
+    <tr><td>4</td><td><code>Campaign.StartDate</code></td><td>≤</td><td>2027-01-31 (FY27 end)</td></tr>
+    <tr><td>5</td><td><code>Campaign.Status</code></td><td>equals</td><td>Planned, Completed</td></tr>
+    <tr><td>6</td><td><code>Contact.Instructor_Type__c</code></td><td>equals</td><td>Salesforce Employee</td></tr>
+    <tr><td>7</td><td><code>Contact.Account.Name</code></td><td>equals</td><td>salesforce.com</td></tr>
+    <tr><td>8</td><td><code>Contact.Active_Contact__c</code></td><td>equals</td><td>True</td></tr>
+    <tr><td>9</td><td><code>Campaign.Name</code></td><td>does not contain</td><td>(old), test — excludes system/test records</td></tr>
+    <tr><td>10</td><td><code>User.Name</code></td><td>contains</td><td>Andres Perez (v2.0), Eric Lynch, Gopal Erusu, Guillermo Medrano, Joseph Wilson, Joy Dixon (v2.0), Juraj Suja, Melody Yang, Rod Curvelo, Stuart Werner, Teo Marcelo, Vincent Lowe</td></tr>
+    <tr><td>11</td><td><code>User.Name</code></td><td>contains</td><td>Alyse DeBonnett, Bhalinder Singh, Brian Richardson, Candice Belandres, Elizabeth Jones, Jim Lepick, Kevin Johnson, Mike Clark, Ram Subramani</td></tr>
+    <tr><td>12</td><td><code>User.Name</code></td><td>contains</td><td>Andrew Hamlin, Ben Conoley, Brittany Connolly, Chris Wirthwein, Christina Obligar, Debra Speer, Jake Emrich, Lisa Tulchin, Patrick Griffith, Ruth Deckard, Sophia Zurcher</td></tr>
+    <tr><td>13</td><td><code>User.Name</code></td><td>contains</td><td>Andres Cespedes, Gabriel Ostolaza Alfaro, Ingrid de Moraes, Isabelle Faure, Laura Maffezzini, Max Golov, Sebastien Colas, Simon Connock, Steven Smith</td></tr>
+    <tr><td>14</td><td><code>User.Name</code></td><td>contains</td><td>Andrea Carvalho, Billy Flynn, Christian Zapla, Daniel Monk, Darren Hendrick, Marc Kerhoas, Mathias Artaud, Nidhi Jain, Paul Killeen</td></tr>
+    <tr><td>15</td><td><code>User.Name</code></td><td>contains</td><td>A Architya, Aman Pandey, Gargi Singh, Junaid Ahmed Shaik, Krishna Chaitanya, Mohd Wasil Khan, Mrunal Khandagale, Ram Undadi, Saravan Bhetanabhotla, Shahbaz Nasimi <em>(Affa Khatoon's team)</em></td></tr>
+    <tr><td>16</td><td><code>User.Name</code></td><td>contains</td><td>Biswajit Mohanty, Carlos Torres, Elaina Williams, Freya Castro, Harini Shah, Javier Garcia, Julian Aguilar, Krithika Pai, Md Rahbar Zaman, Monish Aditya, Shani Elsa Shaji, Vania Ramirez <em>(Mohina Sheikh + Amanda Ortega's teams)</em></td></tr>
+  </table>
+
+  <div class="callout amber">
+    <p><strong>Why full names instead of last names?</strong> An earlier version of the report used <code>User.LastName contains</code> with a separate exclusion filter. This was replaced with <code>User.Name contains</code> full names to eliminate false positives (e.g. last name "Singh" matching non-instructors) and make the filter set self-documenting. Filters 10–16 replaced the previous last-name filter approach.</p>
+  </div>
+
+  <h3>Why filters 15 and 16 exist but may show no results</h3>
+  <p>Filters 15 and 16 are in the report and are correctly structured. However, APAC and LATAM campaigns are owned by the <strong>"TandC Integrations"</strong> integration user — the instructor is stored in <code>Campaign.Instructor__c</code> (a Contact lookup field), not as Campaign Owner. Because the report type joins Campaign → User via <strong>Campaign Owner</strong>, <code>User.Name</code> filters can never match APAC/LATAM campaigns regardless of what names are listed. See <a href="#known-issues">Known Issues</a> for the full explanation and the path to fix it.</p>
+
+  <h3>Manager ManagerId updates</h3>
+  <p>As part of setting up the report filter groups, 14 User records in the T&amp;C org were updated to set the correct <code>ManagerId</code> field, matching the manager assignments shown in the dashboard. This was done via bulk upsert using the Salesforce CLI (<code>sf data upsert bulk</code>). The manager assignments are:</p>
+  <table>
+    <tr><th>Manager</th><th>Team (filter #)</th></tr>
+    <tr><td>Teo Marcelo</td><td>Filter 10 — AMER team 1</td></tr>
+    <tr><td>Joy Dixon</td><td>Filter 11 — AMER team 2</td></tr>
+    <tr><td>Debra Speer</td><td>Filter 12 — AMER team 3</td></tr>
+    <tr><td>Sebastien Colas</td><td>Filter 13 — EMEA</td></tr>
+    <tr><td>Andrea Carvalho</td><td>Filter 14 — EMEA/mixed</td></tr>
+    <tr><td>Affa Khatoon</td><td>Filter 15 — APAC</td></tr>
+    <tr><td>Mohina Sheikh / Amanda Ortega</td><td>Filter 16 — APAC/LATAM</td></tr>
+  </table>
+</section>
+
+<!-- ─── KNOWN ISSUES ───────────────────────────────────────────────────────── -->
+<section id="known-issues">
+  <h2>Known Issues &amp; Follow-ups</h2>
+
+  <div class="callout amber">
+    <p><strong>Action required:</strong> The items below are open gaps that need follow-up. They do not affect AMER or EMEA data — only APAC and LATAM.</p>
+  </div>
+
+  <h3>APAC / LATAM campaigns missing from the Salesforce report</h3>
+
+  <h4>What you see</h4>
+  <p>Instructors on Affa Khatoon's, Mohina Sheikh's, and Amanda Ortega's teams do not appear in the "FY27 NEW Delivery Util report*" — even though filters 15 and 16 in the report contain all their full names.</p>
+
+  <h4>Root cause</h4>
+  <p>APAC and LATAM campaigns are created and owned by the <strong>TandC Integrations</strong> integration user (a system account, not a person). The instructor who delivers the campaign is stored in a custom field: <code>Campaign.Instructor__c</code> — a Contact lookup field, not Campaign Owner.</p>
+  <p>The report type "Campaigns with Contacts with User" (<code>Campaigns_with_Contacts_with_User__c</code>) joins Campaign → User via <strong>Campaign Owner only</strong>. It does not traverse <code>Campaign.Instructor__c</code>. As a result:</p>
+  <ul>
+    <li><code>User.Name</code> filters match the <em>Campaign Owner</em>, which is "TandC Integrations" for all APAC/LATAM campaigns.</li>
+    <li>No instructor name filter will ever match these records in the current report type, regardless of what names are listed in the filter.</li>
+  </ul>
+
+  <div class="callout amber">
+    <p><strong>Confirmed example:</strong> Campaign "APAC - ADX201 - 16 Feb" — Owner: TandC Integrations, <code>Instructor__c</code>: Shahbaz Nasimi (Contact). Shahbaz is in filter 15, but this campaign cannot appear in the report.</p>
+  </div>
+
+  <h4>Impact</h4>
+  <ul>
+    <li>The Salesforce report does not show any APAC or LATAM utilization data for this team.</li>
+    <li>The dashboard's "By Cloud" sub-views (By Manager, By Instructor) show "No AMER campaign data" for Affa, Mohina, and Amanda's teams — because the camps data used for By Cloud is also sourced from Campaign Owner.</li>
+    <li>AMER and EMEA are not affected — their campaigns use Campaign Owner as the instructor identifier.</li>
+  </ul>
+
+  <h4>Options to fix</h4>
+  <table>
+    <tr><th>Option</th><th>Effort</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>A · New custom report type</strong></td>
+      <td>Medium</td>
+      <td>Create a new CRT that joins Campaign → Contact via <code>Campaign.Instructor__c</code>, then Contact → User via <code>Contact.User__c</code>. This is the cleanest fix and would make filters work properly. Requires Salesforce admin access in Setup → Report Types.</td>
+    </tr>
+    <tr>
+      <td><strong>B · Change Campaign Owner for APAC/LATAM</strong></td>
+      <td>Medium–High</td>
+      <td>Update the TandC Integrations integration to set Campaign Owner = the instructor's User record instead of (or in addition to) <code>Instructor__c</code>. Would make the existing report type work without changes. Risk: may affect other automation that depends on TandC Integrations being the owner.</td>
+    </tr>
+    <tr>
+      <td><strong>C · Export via separate report / SOQL</strong></td>
+      <td>Low</td>
+      <td>Create a separate Salesforce report or SOQL query that reads <code>Campaign.Instructor__c</code> directly, then merge the APAC/LATAM data into the dashboard alongside the AMER/EMEA data. Quickest workaround without touching the report type or integration.</td>
+    </tr>
+  </table>
+
+  <div class="callout blue">
+    <p><strong>Current workaround:</strong> APAC and LATAM utilization data is sourced from the <strong>Google Sheet (FY27 Event Util Days Matrix)</strong> as monthly aggregates. This is why APAC/LATAM instructors appear in the main dashboard tabs (By Region, By Manager, By Instructor) but not in the By Cloud views — the Google Sheet does not include a cloud/product breakdown per delivery.</p>
+  </div>
 </section>
 
 <!-- ─── TALKING POINTS ────────────────────────────────────────────────────── -->

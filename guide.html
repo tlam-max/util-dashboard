@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T&C Delivery Utilization Dashboard — Reference Guide</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: #e2e0d9;
+    --text: #0b0b0b;
+    --text2: #52514e;
+    --text3: #898781;
+    --accent: #2a78d6;
+    --accent-light: #eaf2fd;
+    --green: #006b4a;
+    --green-light: #e6f5ef;
+    --amber: #8a6200;
+    --amber-light: #fdf4e3;
+    --purple: #6250d6;
+    --orange: #eb6834;
+    --teal: #1baf7a;
+    --yellow: #eda100;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 14px; }
+
+  .page-header {
+    background: #0a2463;
+    color: #fff;
+    padding: 28px 40px;
+  }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 13px; opacity: .7; margin-top: 4px; }
+
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  nav a {
+    display: block;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text2);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  nav a:hover { color: var(--text); }
+  nav a.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+  main { max-width: 960px; margin: 0 auto; padding: 36px 40px 80px; }
+
+  section { margin-bottom: 52px; scroll-margin-top: 56px; }
+  h2 { font-size: 19px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+  h4 { font-size: 13px; font-weight: 600; color: var(--text2); margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .4px; }
+  p { margin-bottom: 10px; color: var(--text2); }
+  ul, ol { margin: 8px 0 12px 20px; color: var(--text2); }
+  li { margin-bottom: 4px; }
+  strong { color: var(--text); font-weight: 600; }
+  code { font-family: "SF Mono", Consolas, monospace; font-size: 12px; background: #f0ede8; padding: 1px 5px; border-radius: 3px; color: #6b3a2a; }
+
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+  .callout.blue { background: var(--accent-light); border-left: 3px solid var(--accent); }
+  .callout.green { background: var(--green-light); border-left: 3px solid var(--teal); }
+  .callout.amber { background: var(--amber-light); border-left: 3px solid var(--yellow); }
+  .callout p { margin: 0; color: var(--text); }
+
+  /* Formula card */
+  .formula-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .formula-card .field-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .formula-card .formula {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 12px;
+    background: #f0ede8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    color: #3a2a1a;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .formula-card .desc { font-size: 13px; color: var(--text2); }
+
+  /* Data flow */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 140px;
+    text-align: center;
+  }
+  .flow-box.source { border-color: var(--accent); color: var(--accent); }
+  .flow-box.process { border-color: var(--purple); color: var(--purple); }
+  .flow-box.output { border-color: var(--teal); color: var(--green); }
+  .flow-arrow { font-size: 18px; color: var(--text3); }
+
+  /* Type pills */
+  .pill {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 4px;
+    color: #fff;
+  }
+  .pill.P { background: #2a78d6; }
+  .pill.W { background: #6250d6; }
+  .pill.PW { background: #eb6834; }
+  .pill.B { background: #1baf7a; }
+  .pill.T { background: #eda100; color: #3a2a00; }
+
+  /* Talking points */
+  .talking-point {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .talking-point .step {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .talking-point .headline {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .talking-point .script {
+    font-size: 13px;
+    color: var(--text2);
+    border-left: 3px solid var(--accent-light);
+    padding-left: 12px;
+    margin: 8px 0;
+    font-style: italic;
+  }
+  .talking-point .action {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; background: var(--bg); font-weight: 600; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--text); }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .toc-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    transition: border-color .15s;
+  }
+  .toc-item:hover { border-color: var(--accent); color: var(--accent); }
+  .toc-item span { display: block; font-size: 11px; font-weight: 400; color: var(--text3); margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>T&amp;C Delivery Utilization Dashboard</h1>
+  <p>Reference Guide &mdash; Data sources, calculated fields, filters, and talking points &middot; FY27 (Feb 2026 &ndash; Jan 2027)</p>
+</div>
+
+<nav id="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#quick-tips">Quick Tips</a>
+  <a href="#data-sources">Data Sources</a>
+  <a href="#calculated-fields">Calculated Fields</a>
+  <a href="#type-mapping">Campaign Types</a>
+  <a href="#new-hires">New Hires</a>
+  <a href="#dashboard-features">Dashboard Features</a>
+  <a href="#talking-points">Talking Points</a>
+  <a href="#faq">FAQ</a>
+</nav>
+
+<main>
+
+<!-- ─── OVERVIEW ─────────────────────────────────────────────────────────── -->
+<section id="overview">
+  <h2>Overview</h2>
+  <p>This dashboard gives a <strong>worldwide view of the T&amp;C Delivery Team's utilization health</strong> for FY27. It combines Salesforce campaign data with event data from the Google Sheet to produce a single, consistent utilization number per instructor.</p>
+
+  <div class="callout blue">
+    <p><strong>The headline number:</strong> each instructor targets <strong>1,200 utilization hours per year</strong> (100 hrs/month). Hours include teaching time with a 30% prep multiplier, plus 16 hrs for each onsite delivery. New hires are pro-rated after a 3-month ramp.</p>
+  </div>
+
+  <div class="toc-grid">
+    <a href="#data-sources" class="toc-item">Data Sources<span>Salesforce + Google Sheet</span></a>
+    <a href="#calculated-fields" class="toc-item">Calculated Fields<span>4 Salesforce formula fields</span></a>
+    <a href="#type-mapping" class="toc-item">Campaign Types<span>How types map to colors</span></a>
+    <a href="#new-hires" class="toc-item">New Hire Logic<span>Ramp + pro-rated targets</span></a>
+    <a href="#dashboard-features" class="toc-item">Dashboard Features<span>Filters, drilldowns, modals</span></a>
+    <a href="#talking-points" class="toc-item">Talking Points<span>How to tell the story</span></a>
+  </div>
+
+  <h3>At a glance</h3>
+  <table>
+    <tr><th>Dimension</th><th>Value</th></tr>
+    <tr><td><strong>Fiscal Year</strong></td><td>FY27 &mdash; Feb 1, 2026 through Jan 31, 2027</td></tr>
+    <tr><td><strong>Team</strong></td><td>72 instructors across AMER (32), EMEA (19), APAC (15), LATAM (6) &mdash; Japan excluded</td></tr>
+    <tr><td><strong>New hires (mid-FY27)</strong></td><td>16 instructors with a 3-month ramp; targets pro-rated from their billing start month</td></tr>
+    <tr><td><strong>Annual target</strong></td><td>1,200 hrs/year &mdash; 100 hrs/month per active instructor</td></tr>
+    <tr><td><strong>Total FY27 hours (to date)</strong></td><td>~57,100 hrs across all 72 instructors</td></tr>
+    <tr><td><strong>Salesforce report</strong></td><td>Campaigns with Contacts with User (custom report type)</td></tr>
+    <tr><td><strong>Supplemental data</strong></td><td>Google Sheet &mdash; FY27 Event Util Days Matrix</td></tr>
+  </table>
+</section>
+
+<!-- ─── QUICK TIPS ───────────────────────────────────────────────────────── -->
+<section id="quick-tips">
+  <h2>Quick Tips for Managers</h2>
+  <p style="color:var(--text2);margin-bottom:18px">The most important nuances to know before reading the full guide.</p>
+
+  <div class="callout amber">
+    <strong>1 · A month bar can look high even with few campaigns listed</strong><br>
+    Clicking a bar shows only <em>Salesforce campaigns</em>. Hours from Boot Camps, travel, and private workshops tracked in the Google Sheet do not appear as individual campaigns — they are loaded as monthly aggregates. If the hours shown in the bar are higher than the campaign list explains, cross-reference the <strong>Google Sheet (FY27 Event Util Days Matrix)</strong> to see the full activity breakdown for that month.
+  </div>
+
+  <div class="callout blue">
+    <strong>2 · New hire % of target is intentionally lower — that's by design</strong><br>
+    New hires follow a 3-phase ramp schedule:
+    <ul style="margin:6px 0 0 18px">
+      <li><strong>Months 1–3 (0–3 months in role):</strong> <strong style="color:var(--amber)">0% target</strong> — onboarding period, no billable hours expected</li>
+      <li><strong>Months 4–6 (3–6 months in role):</strong> <strong style="color:var(--accent)">50% target</strong> — 50 hrs/month, building their delivery load</li>
+      <li><strong>Month 7+ (6+ months in role):</strong> <strong style="color:var(--green)">100% target</strong> — full 100 hrs/month</li>
+    </ul>
+    Their FY27 target is pro-rated accordingly — a May 2026 starter has a full-year target of 450 hrs (3 × 50 + 3 × 100), not 1,200. A low % on a new hire's tile is normal and expected during their ramp period.
+  </div>
+
+  <div class="callout blue">
+    <strong>3 · Pace vs Target (YTD) only counts hours up to the current month</strong><br>
+    The Pace tile on an instructor's modal compares their <em>YTD actual</em> (through the current month only) against their <em>YTD expected</em> based on their ramp schedule. December and January data are not included in the pace calculation until those months arrive. The sub-label always shows exactly which month it is calculated through (e.g. "900 hrs expected through Nov 26").
+  </div>
+
+  <div class="callout blue">
+    <strong>4 · Campaign drill-down is AMER only</strong><br>
+    The per-campaign breakdown when clicking a monthly bar is only available for AMER instructors (sourced from Salesforce). For EMEA, APAC, and LATAM instructors, all data comes from the Google Sheet as monthly aggregates — clicking a bar will show "no Salesforce campaign data" for these regions.
+  </div>
+
+  <div class="callout green">
+    <strong>5 · Use "New Hires: Remove" to see your established team's true pace</strong><br>
+    Toggling <strong>New Hires: Remove</strong> in the header hides all FY27 new hires from every view — KPIs, charts, the target line, and all tabs. The worldwide target line drops to reflect only the established team's targets. This gives you a cleaner read on how the core team is tracking without new hire ramp noise pulling the numbers down.
+  </div>
+
+  <div class="callout green">
+    <strong>6 · Drill from manager → instructor → back without losing your place</strong><br>
+    Click a manager bar to open their team modal. Click any instructor name in the team table to see their individual metrics. A <strong>← Back to team</strong> button appears at the top of the instructor modal — click it to return directly to the manager's team view without closing and reopening.
+  </div>
+
+  <div class="callout amber">
+    <strong>7 · Utilization hours include a 30% prep multiplier</strong><br>
+    Hours are not raw teaching time. Each delivery day is multiplied by <strong>1.3</strong> to credit instructors for preparation time. On-site deliveries also add <strong>16 travel hours</strong>. This means a 5-day course (40 hrs teaching) contributes 52 hrs utilization, plus travel if on-site. The Google Sheet column <em>Final_Util__c</em> is the field the dashboard sums.
+  </div>
+</section>
+
+<!-- ─── DATA SOURCES ─────────────────────────────────────────────────────── -->
+<section id="data-sources">
+  <h2>Data Sources</h2>
+
+  <h3>1 · Salesforce T&amp;C Org — Campaign Report</h3>
+  <p>The primary data source is a custom Salesforce report using the <strong>Campaigns with Contacts with User</strong> report type. This custom report type (CRT) joins three objects:</p>
+  <div class="flow">
+    <div class="flow-box source">User<br><small>Instructor</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box source">Contact<br><small>linked via Contact.User__c</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box source">Campaign<br><small>linked via CampaignMembers</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box output">Final_Util__c<br><small>per campaign</small></div>
+  </div>
+  <p>The report is filtered to FY27 dates (StartDate &ge; Feb 1 2026, &le; Jan 31 2027) and excludes campaign types <code>HOT</code> and <code>TEST</code> (system/test records). It is grouped by <strong>Region &rarr; User &rarr; Campaign Type</strong>.</p>
+  <ul>
+    <li>AMER instructors source 100% of their data from Salesforce.</li>
+    <li>EMEA, APAC, and LATAM instructors who run <em>events</em> (conferences, Dreamforce, TDX, SF+) have their event hours supplemented by the Google Sheet.</li>
+  </ul>
+
+  <h3>2 · Google Sheet — FY27 Event Util Days Matrix</h3>
+  <p>Covers event deliveries that exist outside the standard Salesforce campaign workflow. The sheet has two relevant tabs:</p>
+
+  <h4>Tab 1 — Event Data</h4>
+  <p>Each row is an instructor. Columns represent individual events (e.g. <em>TDX - Bootcamp April 2026</em>, <em>SF+ June 2026</em>). Each cell contains the number of <strong>event days</strong> the instructor delivered at that event.</p>
+  <table>
+    <tr><th>Column category</th><th>How it's used</th></tr>
+    <tr><td><strong>Event day columns</strong> (excluding Travel)</td><td>event days &times; 8 hrs &times; 1.3 prep multiplier = utilization hours &rarr; added to Bootcamp category</td></tr>
+    <tr><td><strong>Additional Travel Days</strong></td><td>travel days &times; 8 hrs = travel hours &rarr; added to Travel (T) category</td></tr>
+  </table>
+  <div class="callout amber">
+    <p><strong>Bootcamp bucket:</strong> All Google Sheet events (including Salesforce+, TDX, Dreamforce) roll into the <span class="pill B">B</span> Bootcamp category alongside Salesforce-branded bootcamps from the CRM.</p>
+  </div>
+
+  <h4>Tab 2 — New Hire Start Dates</h4>
+  <p>Lists the name and start month of each instructor who joined mid-FY27. Used to pro-rate their annual target and apply the 3-month ramp (see <a href="#new-hires">New Hire Logic</a>).</p>
+
+  <h3>How the two sources are merged</h3>
+  <p>A Python script joins the two datasets on instructor name (with manual corrections for name mismatches between Salesforce and the Google Sheet). The merged output is a single JSON structure embedded in the dashboard HTML — no live API calls are made when viewing the dashboard. To refresh data, re-run the build script and republish the HTML file.</p>
+
+  <div class="callout amber">
+    <p><strong>Name corrections applied:</strong> <code>Lisa Tulchin (she/her/hers)</code> &rarr; <code>Lisa Tulchin</code> &bull; <code>Andres Perez</code> &rarr; <code>Andres Perez (v2.0)</code> &bull; <code>Javier Garcia</code> &rarr; <code>Javier Garcia Salcedo</code> &bull; <code>Liz Jones</code> &rarr; <code>Elizabeth Jones</code> &bull; <code>Ramsubramani Elangovan</code> &rarr; <code>Ram Subramani</code></p>
+  </div>
+</section>
+
+<!-- ─── CALCULATED FIELDS ─────────────────────────────────────────────────── -->
+<section id="calculated-fields">
+  <h2>Calculated Fields (Salesforce)</h2>
+  <p>Four formula fields were created on the <strong>Campaign</strong> object in the T&amp;C Salesforce org. All four are visible in the CRT report and in individual Campaign records (read-only for Salesforce Employee and Contractor profiles).</p>
+
+  <div class="formula-card">
+    <div class="field-name">Duration_Hours__c &mdash; Daily Teaching Hours</div>
+    <div class="formula">IF(
+  AND(LEN(Start_Time__c) >= 5, LEN(End_Time__c) >= 5),
+  ROUND(
+    (VALUE(LEFT(End_Time__c,2)) + VALUE(MID(End_Time__c,4,2))/60)
+    - (VALUE(LEFT(Start_Time__c,2)) + VALUE(MID(Start_Time__c,4,2))/60),
+    1
+  ),
+  NULL
+)</div>
+    <div class="desc"><strong>What it does:</strong> Converts the <code>Start_Time__c</code> and <code>End_Time__c</code> text fields (stored as HH:MM:SS) into decimal hours per teaching day. Example: 09:00 to 17:00 = 8.0 hrs. Returns <code>NULL</code> if either field is missing.</div>
+  </div>
+
+  <div class="formula-card">
+    <div class="field-name">Actual_Util__c &mdash; Total Teaching Hours</div>
+    <div class="formula">IF(
+  AND(NOT(ISBLANK(StartDate)), NOT(ISBLANK(EndDate)),
+      LEN(Start_Time__c) >= 5, LEN(End_Time__c) >= 5),
+  ROUND(
+    (EndDate - StartDate + 1)
+    * ((VALUE(LEFT(End_Time__c,2)) + VALUE(MID(End_Time__c,4,2))/60)
+       - (VALUE(LEFT(Start_Time__c,2)) + VALUE(MID(Start_Time__c,4,2))/60)),
+    1
+  ),
+  NULL
+)</div>
+    <div class="desc"><strong>What it does:</strong> Multiplies the number of calendar days in the campaign (<code>EndDate - StartDate + 1</code>) by the daily teaching hours. A 3-day campaign running 09:00–17:00 = 3 &times; 8 = 24 hrs. Weekends are included because bootcamps can run on weekends and each delivery block is its own separate campaign record. Returns <code>NULL</code> if dates or times are missing.</div>
+  </div>
+
+  <div class="formula-card">
+    <div class="field-name">Travel_Hours__c &mdash; Onsite Travel Allowance</div>
+    <div class="formula">IF(
+  AND(NOT(ISBLANK(Address__c)), NOT(CONTAINS(Address__c, "Virtual"))),
+  16,
+  0
+)</div>
+    <div class="desc"><strong>What it does:</strong> Awards 16 hours of travel credit for any onsite campaign. The detection uses the campaign's <strong>Address</strong> field, not the campaign name &mdash; virtual deliveries have "Virtual" in their address; onsite deliveries have a real street/city address. 16 hrs = 2 travel days &times; 8 hrs.</div>
+  </div>
+
+  <div class="formula-card">
+    <div class="field-name">Final_Util__c &mdash; Final Utilization Hours</div>
+    <div class="formula">ROUND(Actual_Util__c * 1.3 + Travel_Hours__c, 1)</div>
+    <div class="desc"><strong>What it does:</strong> The master utilization number per campaign. Teaching hours are multiplied by <strong>1.3 (30% prep multiplier)</strong> to credit instructors for preparation time alongside delivery time. Travel hours are then added. This is the field summed in the dashboard and in the Salesforce report chart's reference line.</div>
+  </div>
+
+  <div class="callout green">
+    <p><strong>Target derivation:</strong> 12.7 teach days/month &times; 8 hrs &times; 1.3 prep = 132.1 hrs/month teaching+prep, plus travel varies. For target-setting, the number was simplified to <strong>100 hrs/month / 1,200 hrs/year</strong> &mdash; this is the reference line value used in the Salesforce report chart and in this dashboard.</p>
+  </div>
+
+  <h3>Field Level Security</h3>
+  <p>These four formula fields default to <em>no access</em> when created. Access was granted via:</p>
+  <ul>
+    <li><strong>System Administrator</strong> profile &mdash; read + edit</li>
+    <li><strong>Salesforce Employee</strong> profile &mdash; read only</li>
+    <li><strong>Contractor</strong> profile &mdash; read only</li>
+    <li><strong>Campaign_Duration_Access</strong> permission set &mdash; read + edit, assigned to individual users as needed</li>
+    <li>Any custom profiles (e.g. the T&amp;C custom profile) need to be updated manually in Salesforce Setup &rarr; Profiles &rarr; Field-Level Security.</li>
+  </ul>
+</section>
+
+<!-- ─── CAMPAIGN TYPE MAPPING ─────────────────────────────────────────────── -->
+<section id="type-mapping">
+  <h2>Campaign Type Mapping</h2>
+  <p>The dashboard consolidates Salesforce campaign types and Google Sheet event categories into five buckets. Each has a fixed color throughout all charts and tables.</p>
+
+  <table>
+    <tr><th>Dashboard Label</th><th>Code</th><th>Color</th><th>Sources</th><th>Notes</th></tr>
+    <tr>
+      <td><span class="pill P">P</span> <strong>Public</strong></td>
+      <td><code>Public</code></td>
+      <td>Blue</td>
+      <td>Salesforce only</td>
+      <td>Standard scheduled public classes open to any customer</td>
+    </tr>
+    <tr>
+      <td><span class="pill W">W</span> <strong>Workshop</strong></td>
+      <td><code>Workshop</code></td>
+      <td>Violet</td>
+      <td>Salesforce only</td>
+      <td>Facilitator-led workshops; typically shorter than full courses</td>
+    </tr>
+    <tr>
+      <td><span class="pill PW">PW</span> <strong>Private Workshop</strong></td>
+      <td><code>Private Workshop</code></td>
+      <td>Orange</td>
+      <td>Salesforce only</td>
+      <td>Dedicated single-customer workshops</td>
+    </tr>
+    <tr>
+      <td><span class="pill B">B</span> <strong>Bootcamp</strong></td>
+      <td><code>Bootcamp</code> + <code>Internal</code></td>
+      <td>Green</td>
+      <td>Salesforce + Google Sheet</td>
+      <td>Includes: Salesforce bootcamps, <em>Internal</em> campaigns (beta teaches), and all Google Sheet events (TDX, Dreamforce, SF+, Trailhead Academy events)</td>
+    </tr>
+    <tr>
+      <td><span class="pill T">T</span> <strong>Travel</strong></td>
+      <td>n/a (calculated)</td>
+      <td>Amber</td>
+      <td>Both</td>
+      <td>Salesforce: 16 hrs per onsite campaign via <code>Travel_Hours__c</code>. Google Sheet: Additional Travel Days &times; 8 hrs. Shown separately from teaching hours in all charts.</td>
+    </tr>
+  </table>
+
+  <div class="callout amber">
+    <p><strong>Excluded types:</strong> <code>HOT</code> and <code>TEST</code> campaigns are filtered out at the data source level and never appear in the dashboard. These are system or test records (e.g. created by integration users or during testing).</p>
+  </div>
+</section>
+
+<!-- ─── NEW HIRE LOGIC ────────────────────────────────────────────────────── -->
+<section id="new-hires">
+  <h2>New Hire Logic</h2>
+  <p>Instructors who joined during FY27 have a three-phase ramp applied to their monthly targets. Rather than holding a new hire to the same 100 hrs/month as the established team, their target steps up gradually across their first six months.</p>
+
+  <h3>Three-phase ramp schedule</h3>
+  <table>
+    <tr><th>Phase</th><th>Months</th><th>Monthly target</th><th>FY27 contribution</th></tr>
+    <tr>
+      <td><strong>Ramp</strong></td>
+      <td>Start month through start + 2 (first 3 months)</td>
+      <td><strong>0 hrs</strong> — no billable expectation</td>
+      <td>Learning delivery format, shadowing, co-facilitating</td>
+    </tr>
+    <tr>
+      <td><strong>50% billing</strong></td>
+      <td>Start + 3 through start + 5 (next 3 months)</td>
+      <td><strong>50 hrs/month</strong></td>
+      <td>Building toward full delivery load</td>
+    </tr>
+    <tr>
+      <td><strong>Full billing</strong></td>
+      <td>Start + 6 onwards</td>
+      <td><strong>100 hrs/month</strong></td>
+      <td>Full utilization target applies</td>
+    </tr>
+  </table>
+
+  <div class="callout blue">
+    <p><strong>Example — Aug 2026 start:</strong> Ramp Aug–Oct (0 hrs). 50% billing Nov–Jan = 3 &times; 50 = <strong>150 hrs FY27 target</strong>. Full billing starts Feb 2027 (FY28). Without ramp, a simple pro-rate from Aug would give 600 hrs — this tiered approach reflects the reality of how long it takes a new instructor to reach full capacity.</p>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Example — Apr 2026 start:</strong> Ramp Apr–Jun (0 hrs). 50% billing Jul–Sep = 3 &times; 50 = 150 hrs. Full billing Oct–Jan = 4 &times; 100 = 400 hrs. <strong>FY27 target = 550 hrs.</strong></p>
+  </div>
+
+  <h3>Edge cases</h3>
+  <ul>
+    <li><strong>Melody Yang &amp; Javier Garcia Salcedo</strong> — Feb 2026 start (FY27 start). Their ramp runs Feb–Apr, 50% phase May–Jul, full billing from Aug 2026.</li>
+    <li><strong>Aug 2026 starters</strong> — Full billing phase (month 7+) falls in Feb 2027, which is FY28. Their FY27 target is capped at the 50% phase: 150 hrs.</li>
+    <li><strong>Candice Belandres (Jul 2026 start)</strong> — Full billing starts Jan 2027, giving one full-rate month in FY27.</li>
+  </ul>
+
+  <h3>How this appears in the instructor modal chart</h3>
+  <p>The monthly breakdown chart uses background shading and colored boundary lines to show all three phases at a glance:</p>
+  <ul>
+    <li><strong style="color:#8a6200">Amber shading</strong> over the ramp months (phase 1). Dashed amber vertical line at the start month. Tick labels turn amber.</li>
+    <li><strong style="color:#1458b8">Blue shading</strong> over the 50% months (phase 2). Dashed blue vertical line at the 50% start. Tick labels turn blue.</li>
+    <li><strong style="color:#006b4a">Solid green vertical line</strong> at the 100% billing start (phase 3). Tick label turns green. If the 100% start falls outside FY27, a note says "100% in FY28".</li>
+    <li>The <strong>target line</strong> on the chart steps: flat at 0 during ramp, steps up to 50 during the 50% phase, then to 100 at full billing.</li>
+    <li>A <strong>legend row</strong> below the chart shows the exact date ranges for each phase.</li>
+    <li>The <strong>FY27 Target KPI tile</strong> subtitle breaks out the contribution, e.g. "3mo × 50hrs, 1mo × 100hrs".</li>
+    <li>The <strong>modal subtitle</strong> reads: <em>New hire [month] · 50% from [month] · 100% from [month]</em> (or "100% in FY28").</li>
+  </ul>
+
+  <h3>New Hire Start Dates source</h3>
+  <p>Start dates come from the <strong>"New Hire Start Dates"</strong> tab in the Google Sheet Excel file. The 16 instructors listed there are flagged as new hires in the dashboard.</p>
+
+  <h3>New Hires toggle</h3>
+  <p>The <strong>New Hires: Remove</strong> button in the top-right header hides or shows all new hires across every view — KPI tiles, trend chart, target line, By Region, By Manager, and By Instructor tabs. When active (label changes to <strong>New Hires: Removed</strong>), the worldwide target line drops to reflect only the established headcount and their full-rate targets.</p>
+  <p>The toggle also affects modals: when Removed, new hires are excluded from the manager team table and KPIs, and an amber banner appears on a new hire's individual modal to indicate they are currently excluded from team views.</p>
+</section>
+
+<!-- ─── DASHBOARD FEATURES ────────────────────────────────────────────────── -->
+<section id="dashboard-features">
+  <h2>Dashboard Features</h2>
+
+  <h3>Period selector</h3>
+  <p>Five options in the top bar: <strong>FY27</strong> (full year), <strong>Q1</strong> (Feb–Apr), <strong>Q2</strong> (May–Jul), <strong>Q3</strong> (Aug–Oct), <strong>Q4</strong> (Nov–Jan). All KPIs, charts, and drill-downs update to the selected period.</p>
+
+  <h3>Global KPI tiles</h3>
+  <table>
+    <tr><th>Tile</th><th>What it shows</th></tr>
+    <tr><td><strong>Total Util Hours</strong></td><td>Sum of all <code>Final_Util__c</code> hours (+ Google Sheet hours) for the selected period, all active instructors</td></tr>
+    <tr><td><strong>Avg / Instructor</strong></td><td>Total hours divided by the count of instructors who have a non-zero target in the selected period</td></tr>
+    <tr><td><strong>% of Period Target</strong></td><td>Total hours &divide; sum of pro-rated targets for the period &mdash; the headline health number</td></tr>
+    <tr><td><strong>On Pace</strong></td><td>Count of instructors at &ge;90% of their expected pace (adjusted for how much of the period has elapsed)</td></tr>
+  </table>
+  <div class="callout blue">
+    <p><strong>Pace calculation:</strong> As of Nov 5, 2026, 9 of 12 FY27 months are complete (75%). An instructor is "on pace" if they have reached &ge;90% of that fraction of their annual target. "At risk" = 70–90%. "Behind" = below 70%. Q1–Q3 are complete, so 100% of those quarterly targets is expected.</p>
+  </div>
+
+  <h3>Monthly Utilization chart</h3>
+  <p>Stacked bar chart showing hours by campaign type each month for the selected period. The dashed line is the team's combined monthly target — calculated by summing each instructor's per-month target for that month (0, 50, or 100 hrs depending on their ramp phase), so the target line correctly steps up as new hires progress through their ramp.</p>
+
+  <h3>By Campaign Type chart</h3>
+  <p>Donut chart showing the proportion of total hours by type (Public, Workshop, Private Workshop, Bootcamp, Travel) for the selected period.</p>
+
+  <h3>By Region tab</h3>
+  <p>Horizontal stacked bars — one per region (AMER, EMEA, APAC, LATAM). The vertical tick mark on each bar is the region's combined target. <strong>Click a region bar</strong> to jump to the By Manager view filtered to that region.</p>
+
+  <h3>By Manager tab</h3>
+  <p>Horizontal stacked bars — one per manager, sorted by total hours descending. Shows the manager's full team total (all types stacked). Target tick is the sum of each team member's pro-rated target. <strong>Click a manager bar</strong> to open the manager's team modal.</p>
+
+  <h4>Manager team modal</h4>
+  <ul>
+    <li>4 KPI tiles: Team Total Hrs, Team Target, % of Target, On Pace / At Risk / Behind count</li>
+    <li>Monthly stacked bar chart for the whole team — target line is the sum of each team member's individual monthly target (0/50/100 depending on ramp phase), so it accurately reflects the team's tiered ramp schedule</li>
+    <li>Team member table with clickable instructor names (opens the instructor detail modal)</li>
+    <li>When viewing an instructor from within the manager modal, a <strong>← Back to team</strong> button appears at the top-left of the instructor modal header — click it to return to the manager's team view</li>
+    <li>Respects the New Hires toggle — when Removed, new hires are excluded from the team table and all team KPIs</li>
+  </ul>
+
+  <h3>By Instructor tab</h3>
+  <p>Searchable, filterable table of all active instructors. Columns: name, region, manager, hours by type, total, % of target, pace indicator. Sortable by any column. Filterable by <strong>name search</strong>, <strong>region dropdown</strong>, and <strong>manager dropdown</strong>. <strong>Click an instructor name</strong> to open their detail modal.</p>
+
+  <h4>Instructor detail modal</h4>
+  <ul>
+    <li><strong>3 KPI tiles:</strong>
+      <ul>
+        <li><strong>Total Hours / FY27 Target</strong> — shows actual hours and full-year target in one tile (e.g. "820 / 1,200"), with % of target and hours remaining underneath. Color-coded green / amber / red by pace status.</li>
+        <li><strong>Pace vs Target (YTD)</strong> — shows how many hours ahead or behind the instructor is relative to where they <em>should</em> be right now. Compares YTD actual hours (current month and earlier only) against the cumulative expected target for those same months, based on their ramp schedule. Positive = ahead of pace (green); slightly negative = at risk (amber); further behind = red. Sub-label shows "X hrs expected through [current month]".</li>
+        <li><strong>Teaching + Prep</strong> — total teaching and prep hours, with travel hours as a sub-label.</li>
+      </ul>
+    </li>
+    <li><strong>Monthly breakdown chart</strong> — stacked bar chart for FY27. For new hires, three phases are visually annotated:
+      <ul>
+        <li>Amber shading + dashed amber line = ramp months (0% target)</li>
+        <li>Blue shading + dashed blue line = 50% billing months (50 hrs/month target)</li>
+        <li>Solid green line = start of full billing (100 hrs/month)</li>
+        <li>The target line on the chart steps up through all three phases</li>
+        <li>X-axis tick labels are color-coded: amber for ramp, blue for 50% phase, green for the 100% start month</li>
+      </ul>
+    </li>
+    <li><strong>Cumulative Hours vs Target chart</strong> — a line chart below the monthly bars showing running total actual hours (solid blue line) vs running total target hours (dashed gray line) across FY27. The current month is highlighted with a filled dot. Use this to see whether a gap is growing, closing, or flat — it shows trajectory, not just a point-in-time snapshot.</li>
+    <li><strong>Click any bar</strong> on the monthly chart to see the underlying Salesforce campaign breakdown for that month (campaign name, type, utilization hours). Available for AMER instructors only. For EMEA/APAC/LATAM, the Google Sheet data is monthly aggregate only — no per-campaign breakdown is available.
+      <ul>
+        <li><strong>If the campaign list looks incomplete</strong> (e.g. the bar shows 80 hrs but only 2 small campaigns appear), the remaining hours are from activity types tracked in the <strong>Google Sheet</strong> — typically Boot Camps, travel, or private workshops — which are loaded as monthly aggregates and do not appear as individual Salesforce campaigns. Cross-reference the Google Sheet for the full breakdown for that month.</li>
+        <li>Example: an instructor with 82 hrs in September may show only 2 workshop campaigns (4 hrs) in the drill-down — the remaining 62 hrs Boot Camp and 16 hrs travel are in the Google Sheet aggregate and not surfaced as individual campaigns.</li>
+      </ul>
+    </li>
+    <li>Amber banner displayed if a new hire is viewed while the New Hires toggle is set to Removed</li>
+    <li>Modal subtitle shows: <em>New hire [start month] · 50% from [month] · 100% from [month]</em> (or "100% in FY28" for late starters)</li>
+    <li>If opened from a manager's team modal, a <strong>← Back to team</strong> button appears at the top-left — click to return to the manager view</li>
+  </ul>
+
+  <h3>Filters summary</h3>
+  <table>
+    <tr><th>Filter</th><th>Location</th><th>Scope</th></tr>
+    <tr><td>Period (FY27 / Q1–Q4)</td><td>Header bar</td><td>All views — KPIs, charts, tables, modals</td></tr>
+    <tr><td>New Hires: Remove / Removed</td><td>Header bar</td><td>All views including modals</td></tr>
+    <tr><td>Region (click bar)</td><td>By Region tab</td><td>Filters By Manager tab to that region</td></tr>
+    <tr><td>Search (instructor name)</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
+    <tr><td>Region dropdown</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
+    <tr><td>Manager dropdown</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
+    <tr><td>Sort (column headers)</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
+    <tr><td>Dark / Light mode</td><td>Header bar</td><td>Visual only</td></tr>
+  </table>
+</section>
+
+<!-- ─── TALKING POINTS ────────────────────────────────────────────────────── -->
+<section id="talking-points">
+  <h2>Talking Points — Telling the Story</h2>
+  <p>Use this section to walk leadership, managers, or the team through the dashboard. Each step corresponds to a natural place to pause and comment.</p>
+
+  <div class="talking-point">
+    <div class="step">Step 1 &mdash; Set the context</div>
+    <div class="headline">What does utilization mean, and why do we track it?</div>
+    <div class="script">"This dashboard tracks how much time our instructors are spending delivering — and preparing for — training. Our target is 1,200 hours per year per instructor. That's based on roughly 12.7 teaching days per month, times 8 hours a day, with a 30% buffer added for prep time. We also credit 16 hours for any onsite delivery because those require travel. 1,200 hours is what 'fully utilized' looks like for this team."</div>
+    <div class="action">Point to the KPI tiles at the top of the dashboard. Show the % of Period Target tile.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 2 &mdash; Worldwide headline</div>
+    <div class="headline">Is the team on pace?</div>
+    <div class="script">"At a global level, we have [X] instructors, and our total utilization to date is [Y] hours. We're at [Z]% of our FY27 target with 9 of 12 months behind us. The 'On Pace' tile tells us how many instructors are tracking where they should be at this point in the year."</div>
+    <div class="action">Switch the period selector between FY27 and individual quarters to show the quarterly shape. Point out that Q1–Q3 are fully elapsed — those numbers are final.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 3 &mdash; Trend and type mix</div>
+    <div class="headline">What kinds of work are we doing, and how has volume trended?</div>
+    <div class="script">"The monthly chart shows how utilization has stacked up each month, broken out by delivery type. Public classes are our biggest driver, followed by workshops. Bootcamps and events — including conferences like TDX and Dreamforce — are in green. Travel hours are shown separately in amber, so they don't inflate the teaching picture."</div>
+    <div class="action">Point to the monthly chart. Call out any months with obvious dips or spikes (e.g. summer slow-down, conference peaks). Point to the donut chart to show the type mix.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 4 &mdash; Regional breakdown</div>
+    <div class="headline">Which regions are leading and which need attention?</div>
+    <div class="script">"Breaking it down by region, we can see AMER is our largest delivery team by headcount, and they're tracking at [X]% of their target. EMEA and APAC have a mix of Salesforce campaigns and external events from our event matrix. LATAM is a smaller team, so their numbers move more with individual performance."</div>
+    <div class="action">Click the By Region tab. Point out the target tick marks on each bar — the gap between the bar and the tick is the outstanding work. Click a region to filter the manager view.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 5 &mdash; Manager view</div>
+    <div class="headline">How is each manager's team performing?</div>
+    <div class="script">"Drilling into managers, we can see which teams are running ahead of pace and which have a gap. Keep in mind that some teams have new hires who are still in their ramp period and aren't yet counted in the target. [Manager X]'s team is at [Y]% — let's look at what's driving that."</div>
+    <div class="action">Click a manager bar to open the team modal. Walk through the team KPIs and the monthly team chart. Click an instructor name in the team table to go deeper.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 6 &mdash; Individual instructor</div>
+    <div class="headline">What does an individual's year look like?</div>
+    <div class="script">"At the individual level, we can see the full shape of someone's year — which months were heavy, which types of delivery they're running, and exactly which campaigns contributed. For AMER instructors, clicking any bar on the monthly chart shows the underlying campaigns for that month: the campaign name, type, and how many utilization hours it generated. For someone on a ramp, you'll see the chart shaded in three phases showing exactly where they were in their ramp and when their target stepped up."</div>
+    <div class="action">Open an instructor modal. Click a bar to show the campaign drill-down (AMER only). For a new hire, show the amber ramp shading, the blue 50% zone, and the green full-billing line — point out how the target line steps up through each phase.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 7 &mdash; New hire cohort</div>
+    <div class="headline">How do we think about the new hires?</div>
+    <div class="script">"We have 16 instructors who joined during FY27. Their targets are structured in three phases: zero expectation for the first three months while they're onboarding, 50 hours a month for months four through six as they build their load, and the full 100 hours from month seven onwards. For our August starters, that full rate doesn't kick in until February 2027 — FY28 — so their entire FY27 target is just 150 hours at the 50% rate. To see how the established team is tracking without the new hire noise, toggle new hires off in the top right — all the KPIs and target lines update to reflect only the full-year team."</div>
+    <div class="action">Open a new hire's modal and walk through the three-phase shading on the chart. Point to the target KPI subtitle showing the tier breakdown. Toggle New Hires Off and show how the % of Target and On Pace numbers change.</div>
+  </div>
+
+  <div class="talking-point">
+    <div class="step">Step 8 &mdash; Closing frame</div>
+    <div class="headline">What action do we take?</div>
+    <div class="script">"This dashboard gives us a clear view of where the team stands. For anyone who is 'behind' — below 70% of their expected pace — there's a conversation to have about pipeline and upcoming bookings. For managers, the team modal is the quickest way to identify who needs support. And as we close out Q4, these FY27 numbers will become the baseline for how we think about FY28 capacity planning."</div>
+    <div class="action">Point to the pace color coding — green (on pace), amber (at risk), red (behind) — on the By Instructor table as a quick action-item list.</div>
+  </div>
+</section>
+
+<!-- ─── FAQ ───────────────────────────────────────────────────────────────── -->
+<section id="faq">
+  <h2>FAQ</h2>
+
+  <h3>Why doesn't the campaign drill-down work for EMEA/APAC instructors?</h3>
+  <p>EMEA, APAC, and LATAM instructors who deliver events have their hours recorded in the Google Sheet, not as individual Salesforce campaign records. The Google Sheet only captures monthly totals, not per-event detail. AMER instructors are 100% in Salesforce and have full per-campaign drill-down.</p>
+
+  <h3>Why are Internal campaigns in Bootcamp?</h3>
+  <p>Internal campaigns represent beta teaches — where instructors deliver a course internally before it goes to customers. This counts toward utilization and is grouped with Bootcamp since both represent non-standard delivery formats beyond the core Public/Workshop/Private Workshop types.</p>
+
+  <h3>Why is the travel detection based on the Address field, not the campaign name?</h3>
+  <p>Most virtual campaigns do <em>not</em> include the word "virtual" in their name. The reliable signal is the campaign's <strong>Address</strong> field: virtual deliveries have "Virtual" in the address (e.g. "Virtual i-Learning"), while onsite deliveries have a real street address or city. The formula checks <code>NOT(CONTAINS(Address__c, "Virtual"))</code>.</p>
+
+  <h3>Why is the target 1,200 and not 1,524 (12.7 days × 8 hrs × 1.3 × 12 months)?</h3>
+  <p>The 1,524 figure includes the prep multiplier in the teaching component. The 1,200 target was established as the practical planning number — a rounded-down simplification that provides a clean reference line value. It was set at 1,200 (100/month) for ease of communication and is the value used in both the Salesforce report chart and this dashboard.</p>
+
+  <h3>How is a new hire's FY27 target calculated with the tiered ramp?</h3>
+  <p>The target is the sum of each month's individual contribution: 0 hrs for ramp months, 50 hrs for 50% phase months, and 100 hrs for full billing months — counting only months that fall within FY27 (Feb 2026 – Jan 2027). For example, an April 2026 starter has: 0+0+0 (ramp, Apr–Jun) + 50+50+50 (50% phase, Jul–Sep) + 100+100+100+100 (full billing, Oct–Jan) = <strong>550 hrs FY27 target</strong>.</p>
+
+  <h3>Why is Japan excluded?</h3>
+  <p>The Japan team operates separately and is not part of the worldwide T&amp;C Delivery Team being measured here. Their campaigns exist in Salesforce but are excluded from this dashboard by region filter.</p>
+
+  <h3>How do I refresh the data?</h3>
+  <p>The dashboard is a self-contained HTML file with the data baked in. To refresh: re-run the Python build script (which re-pulls the Salesforce report and re-reads the Google Sheet Excel file), then copy the new HTML file to replace the existing one. No server or database is required.</p>
+
+  <h3>Can I share this file?</h3>
+  <p>Yes — it is a single self-contained HTML file with no external data dependencies (only Chart.js, loaded from a CDN). You can email it, put it on a shared drive, or host it on an internal page. Anyone who opens it gets the same view. Because the data is embedded, there is no live connection to Salesforce — the file reflects the point-in-time data from when it was last built.</p>
+</section>
+
+</main>
+
+<script>
+// Highlight nav on scroll
+const sections = document.querySelectorAll('section[id]');
+const links = document.querySelectorAll('nav a');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

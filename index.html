@@ -120,6 +120,7 @@ tr:hover td{background:var(--bg)}
 </header>
 
 <div class="page">
+  <div id="k-headline" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;padding:12px 16px;background:var(--surface);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;gap:8px"></div>
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">Total Util Hours</div><div style="display:flex;align-items:baseline;gap:6px"><div class="kpi-val" id="k-total">—</div><span id="k-total-pct" style="font-size:14px;font-weight:500;color:var(--text2)"></span></div><div class="kpi-sub" id="k-total-sub"></div><div class="kpi-bar-bg"><div class="kpi-bar" id="k-total-bar"></div></div></div>
     <div class="kpi"><div class="kpi-label">Avg / Instructor</div><div class="kpi-val" id="k-avg">—</div><div class="kpi-sub" id="k-avg-sub"></div><div class="kpi-bar-bg"><div class="kpi-bar" id="k-avg-bar"></div></div></div>
@@ -129,7 +130,7 @@ tr:hover td{background:var(--bg)}
 
   <div class="charts-row">
     <div class="card">
-      <h3>Monthly Utilization</h3>
+      <h3>Monthly Pace vs. Target — are we closing the gap?</h3>
       <div class="chart-wrap" style="height:260px"><canvas id="trend-chart"></canvas></div>
       <div class="legend-row" id="trend-legend"></div>
     </div>
@@ -145,6 +146,7 @@ tr:hover td{background:var(--bg)}
       <button class="tab-btn active" data-tab="region">By Region</button>
       <button class="tab-btn" data-tab="manager">By Manager</button>
       <button class="tab-btn" data-tab="instructor">By Instructor</button>
+      <button class="tab-btn" data-tab="cloud">By Cloud</button>
     </div>
     <div id="tab-content"></div>
   </div>
@@ -173,8 +175,52 @@ D.fy_months.forEach((m,i) => MONTH_LABEL[m] = D.month_labels[i]);
 const INST_BY_IDX = {};
 D.instructors.forEach(inst => INST_BY_IDX[inst.i] = inst);
 
-const TYPES = ['P','W','PW','B','T'];
+const TYPES = ['P','B','PW','W','T'];
 const TYPE_LBL = {P:'Public',W:'Workshop',PW:'Private WS',B:'Bootcamp',T:'Travel'};
+
+// ── Cloud mapping ─────────────────────────────────────────────────────────────
+const CLOUD_PREFIX_MAP = {
+  // Agentforce / AI
+  AGT:'Agentforce', AFS:'Agentforce', AIF:'Agentforce',
+  // Data Cloud
+  SDC:'Data Cloud',
+  // Tableau
+  TTD:'Tableau', TAB:'Tableau', TVA:'Tableau', TTP:'Tableau', TSA:'Tableau', ADX:'Tableau',
+  // MuleSoft
+  MSA:'MuleSoft', ARC:'MuleSoft', OPS:'MuleSoft', MAX:'MuleSoft',
+  // Platform (DEX handled by code below — DEX450/DEX602 = Platform Dev, rest = MuleSoft)
+  OMS:'Platform', PDX:'Platform', BSX:'Platform', FSL:'Platform',
+  // Revenue Cloud
+  REV:'Revenue Cloud',
+  // Marketing Cloud
+  MKT:'Marketing Cloud', MOC:'Marketing Cloud',
+  // Commerce Cloud
+  CCD:'Commerce Cloud', CCM:'Commerce Cloud',
+  // Industries
+  IND:'Industries',
+  // Slack
+  SLK:'Slack',
+};
+const CLOUD_COLORS = {
+  'Agentforce':'#2a78d6','Data Cloud':'#1baf7a','Tableau':'#eb6834',
+  'MuleSoft':'#6250d6','Platform':'#eda100','Revenue Cloud':'#e34948',
+  'Marketing Cloud':'#e87ba4','Commerce Cloud':'#008300','Industries':'#c98500',
+  'Slack':'#199e70','Other':'#898781'
+};
+const CLOUD_ORDER = ['Agentforce','Data Cloud','Tableau','MuleSoft','Platform','Revenue Cloud','Marketing Cloud','Commerce Cloud','Industries','Slack','Other'];
+
+function getCourseCode(name) {
+  const m = name.match(/[-\s]([A-Z]{2,4}\d{3,4}[A-Z]?)[-\s]/);
+  return m ? m[1] : null;
+}
+function getCloud(campName) {
+  const code = getCourseCode(campName);
+  if (!code) return 'Other';
+  // Special DEX split: DEX450, DEX602 = Platform; rest = MuleSoft
+  if (code.startsWith('DEX')) return (code==='DEX450'||code==='DEX602') ? 'Platform' : 'MuleSoft';
+  const prefix = code.match(/^[A-Z]+/)[0];
+  return CLOUD_PREFIX_MAP[prefix] || 'Other';
+}
 const COLORS = () => {
   const dk = document.documentElement.getAttribute('data-theme') === 'dark';
   return {
@@ -277,7 +323,8 @@ function renderKPIs(months, byInst) {
 
   set('k-total', fmt(totalHrs));
   set('k-total-pct', fmtPct(pct));
-  set('k-total-sub', fmt(teamTarget)+' hrs target · '+active.length+' instructors');
+  const remaining = Math.max(0, teamTarget - totalHrs);
+  set('k-total-sub', fmt(teamTarget)+' target · '+fmt(remaining)+' hrs to go');
   setW('k-total-bar', Math.min(100,pct)+'%');
   setBg('k-total-bar', barColor(pct));
 
@@ -296,6 +343,13 @@ function renderKPIs(months, byInst) {
   set('k-pace-sub', atRisk+' at risk · '+behind+' behind');
   setW('k-pace-bar', Math.min(100,pacePct)+'%');
   setBg('k-pace-bar', barColor(pacePct));
+
+  // Headline insight
+  const hl = document.getElementById('k-headline');
+  if (hl) {
+    const statusColor = pct>=75*0.9?'var(--on)':pct>=75*0.7?'var(--risk)':'var(--behind)';
+    hl.innerHTML = `<span style="color:${statusColor}">&#9679;</span>&nbsp;Team is <span style="color:${statusColor}">${fmtPct(pct)}</span> of ${period} target &nbsp;·&nbsp; <span style="color:var(--on)">${onPace}</span> of ${active.length} instructors on pace`;
+  }
 }
 
 // ── Trend Chart ─────────────────────────────────────────────────────────────
@@ -399,7 +453,7 @@ function renderHBars(container, rows) {
       <div class="hbar-label" title="${row.label}">${row.label}</div>
       <div class="hbar-track">
         <div class="hbar-fill">${segs}</div>
-        ${tgt>0 ? `<div class="hbar-target" style="left:${targetPct.toFixed(1)}%" title="Target: ${fmt(tgt)} hrs"></div>` : ''}
+        ${tgt>0 ? `<div class="hbar-target" style="left:${targetPct.toFixed(1)}%" title="Target: ${fmt(tgt)} hrs"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap;font-weight:500">Target</span></div>` : ''}
       </div>
       <div class="hbar-hrs">${fmt(tot)}</div>
       <div class="hbar-pct" style="color:${color}">${tgt>0?fmtPct(pct):''}</div>
@@ -428,7 +482,7 @@ function renderRegion(months, byInst) {
   });
   const div = document.getElementById('tab-content');
   const wrap = document.createElement('div');
-  div.innerHTML = '';
+  div.innerHTML = '<p style="font-size:12px;color:var(--text3);margin-bottom:10px;font-style:italic">Which regions are on pace? Click a bar to drill into that region\'s managers.</p>';
   div.appendChild(wrap);
   renderHBars(wrap, rows);
   // legend
@@ -460,6 +514,7 @@ function renderManager(months, byInst) {
     const target = insts.reduce((s,i)=>s+instTarget(i,months),0);
     return {label:mgr+' ('+insts.length+')', typeMap, target, onClick:()=>openManagerModal(mgr)};
   }).sort((a,b)=>total(b.typeMap)-total(a.typeMap));
+  if (!regionFilter) div.insertAdjacentHTML('afterbegin','<p style="font-size:12px;color:var(--text3);margin-bottom:10px;font-style:italic">Which managers are driving performance? Click a bar to open the team view.</p>');
   const wrap = document.createElement('div');
   div.appendChild(wrap);
   renderHBars(wrap, rows);
@@ -469,6 +524,29 @@ function renderManager(months, byInst) {
     TYPES.map(t=>`<div class="legend-item"><div class="legend-dot" style="background:${C[t]}"></div><span>${TYPE_LBL[t]}</span></div>`).join('')+
     '<div class="legend-item"><div class="legend-dot" style="background:var(--c-target);width:3px;height:14px;border-radius:1px"></div><span>Target</span></div>'+
     '</div>');
+}
+
+// ── Sparkline helper ─────────────────────────────────────────────────────────
+function sparkline(instI, recentMonths) {
+  const C = COLORS();
+  const vals = recentMonths.map(m => {
+    let h = 0;
+    for (const r of D.records) { if (r.i===instI && r.ym===m) h += r.h; }
+    return h;
+  });
+  const maxV = Math.max(...vals, 1);
+  const W = 48, H = 20, pad = 2;
+  const pts = vals.map((v,i) => {
+    const x = pad + (i/(vals.length-1||1)) * (W-pad*2);
+    const y = H - pad - (v/maxV)*(H-pad*2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const dk = document.documentElement.getAttribute('data-theme')==='dark';
+  const lineColor = dk ? '#3987e5' : '#2a78d6';
+  return `<svg width="${W}" height="${H}" style="display:block"><polyline points="${pts}" fill="none" stroke="${lineColor}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>${vals.map((v,i)=>{
+    const x = pad+(i/(vals.length-1||1))*(W-pad*2); const y=H-pad-(v/maxV)*(H-pad*2);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2" fill="${lineColor}"/>`;
+  }).join('')}</svg>`;
 }
 
 // ── Instructor tab ──────────────────────────────────────────────────────────
@@ -509,9 +587,14 @@ function renderInstructor(months, byInst) {
   });
 
   const C = COLORS();
+  const fyMonths = D.fy_months;
+  const today2 = new Date();
+  const currYm2 = today2.getFullYear()+'-'+String(today2.getMonth()+1).padStart(2,'0');
+  const allElapsed = fyMonths.filter(m=>m<=currYm2);
+  const recentMonths = allElapsed.slice(-3);
   const cols = [{k:'name',l:'Instructor'},{k:'region',l:'Region'},{k:'manager',l:'Manager'},
     {k:'P',l:'Public'},{k:'W',l:'Workshop'},{k:'PW',l:'Priv WS'},{k:'B',l:'Bootcamp'},{k:'T',l:'Travel'},
-    {k:'total',l:'Total'},{k:'tgt',l:'Target'},{k:'pct',l:'%'},{k:'status',l:''}];
+    {k:'total',l:'Total'},{k:'tgt',l:'Target'},{k:'pct',l:'%'},{k:'spark',l:'3mo Trend'},{k:'status',l:''}];
 
   const headers = cols.map(c=>`<th class="${sortKey===c.k?'sorted':''}" data-k="${c.k}">${c.l}${sortKey===c.k?(sortAsc?' ▲':' ▼'):''}</th>`).join('');
 
@@ -528,6 +611,7 @@ function renderInstructor(months, byInst) {
       <td class="num total-bold">${fmt(r.tot)}</td>
       <td class="num">${fmt(r.tgt)}</td>
       <td class="num" style="color:${barColor(r.pct)};font-weight:600">${fmtPct(r.pct)}</td>
+      <td style="padding:4px 8px">${recentMonths.length>=2 ? sparkline(r.i, recentMonths) : ''}</td>
       <td><div class="status-cell"><div class="dot" style="background:${dotColor}"></div><span style="color:${dotColor};font-size:11px">${label}</span></div></td>
     </tr>`;
   }).join('');
@@ -542,10 +626,103 @@ function renderInstructor(months, byInst) {
   });
 }
 
+// ── Cloud tab ────────────────────────────────────────────────────────────────
+function renderCloud() {
+  const div = document.getElementById('tab-content');
+  const camps = D.camps || [];
+  if (!camps.length) {
+    div.innerHTML = '<p style="color:var(--text3);padding:20px">No campaign data available.</p>';
+    return;
+  }
+
+  // Aggregate hours by cloud and by course code
+  const cloudHrs = {}, cloudCourses = {}, courseTotals = {};
+  for (const c of camps) {
+    const cloud = getCloud(c.n);
+    const code = getCourseCode(c.n) || 'Other';
+    cloudHrs[cloud] = (cloudHrs[cloud]||0) + c.h;
+    if (!cloudCourses[cloud]) cloudCourses[cloud] = {};
+    cloudCourses[cloud][code] = (cloudCourses[cloud][code]||0) + c.h;
+    courseTotals[code] = (courseTotals[code]||0) + c.h;
+  }
+
+  const grandTotal = Object.values(cloudHrs).reduce((s,v)=>s+v,0);
+  const clouds = CLOUD_ORDER.filter(c => cloudHrs[c]);
+
+  // Build cloud bar rows
+  const maxHrs = Math.max(...clouds.map(c=>cloudHrs[c]));
+
+  const cloudRows = clouds.map(cloud => {
+    const hrs = cloudHrs[cloud];
+    const pct = grandTotal > 0 ? hrs/grandTotal*100 : 0;
+    const barW = maxHrs > 0 ? hrs/maxHrs*100 : 0;
+    const color = CLOUD_COLORS[cloud] || CLOUD_COLORS.Other;
+    // Top 3 courses for this cloud
+    const topCourses = Object.entries(cloudCourses[cloud])
+      .sort((a,b)=>b[1]-a[1]).slice(0,3)
+      .map(([code,h])=>`<span style="background:var(--bg);border-radius:3px;padding:1px 5px;font-size:10px;margin-right:4px">${code} <span style="color:var(--text3)">${fmt(h)}h</span></span>`).join('');
+    return `<div class="hbar-row" data-cloud="${cloud}" style="cursor:pointer;margin-bottom:14px">
+      <div class="hbar-label" style="width:130px;font-weight:600" title="${cloud}">${cloud}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden;position:relative">
+            <div style="height:100%;width:${barW.toFixed(1)}%;background:${color};border-radius:4px;opacity:0.85;transition:width .4s"></div>
+          </div>
+          <div style="width:70px;text-align:right;font-size:12px;color:var(--text2)">${fmt(hrs)}</div>
+          <div style="width:40px;text-align:right;font-size:11px;font-weight:600;color:${color}">${fmtPct(pct)}</div>
+        </div>
+        <div style="padding-left:2px">${topCourses}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  div.innerHTML = `
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;font-style:italic">AMER Salesforce campaign data only. Click a cloud to see course breakdown.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Hours by Cloud</div>
+        <div id="cloud-bars">${cloudRows}</div>
+      </div>
+      <div id="cloud-detail" style="min-height:200px">
+        <div style="font-size:12px;color:var(--text3);padding-top:40px;text-align:center">← Click a cloud to see course detail</div>
+      </div>
+    </div>`;
+
+  // Wire click → course detail
+  div.querySelectorAll('[data-cloud]').forEach(el => {
+    el.addEventListener('click', () => {
+      const cloud = el.dataset.cloud;
+      const color = CLOUD_COLORS[cloud] || CLOUD_COLORS.Other;
+      const courses = Object.entries(cloudCourses[cloud]).sort((a,b)=>b[1]-a[1]);
+      const maxC = courses[0][1];
+      const courseRows = courses.map(([code,h]) => {
+        const w = maxC>0 ? h/maxC*100 : 0;
+        const pct = cloudHrs[cloud]>0 ? h/cloudHrs[cloud]*100 : 0;
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:80px;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0">${code}</div>
+          <div style="flex:1;height:16px;background:var(--bg);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${w.toFixed(1)}%;background:${color};opacity:0.75;border-radius:3px"></div>
+          </div>
+          <div style="width:55px;text-align:right;font-size:11px;color:var(--text2)">${fmt(h)} hrs</div>
+          <div style="width:36px;text-align:right;font-size:10px;color:var(--text3)">${fmtPct(pct)}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('cloud-detail').innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
+          <span style="font-size:13px;font-weight:700;color:var(--text)">${cloud}</span>
+          <span style="font-size:12px;color:var(--text3);margin-left:4px">${fmt(cloudHrs[cloud])} hrs total · ${courses.length} courses</span>
+        </div>
+        ${courseRows}`;
+    });
+  });
+}
+
 // ── Tab router ──────────────────────────────────────────────────────────────
 function renderTab(months, byInst) {
   if (tab==='region') renderRegion(months,byInst);
   else if (tab==='manager') renderManager(months,byInst);
+  else if (tab==='cloud') renderCloud();
   else renderInstructor(months,byInst);
 }
 

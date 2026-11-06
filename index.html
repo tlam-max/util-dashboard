@@ -202,10 +202,10 @@ const CLOUD_PREFIX_MAP = {
   SLK:'Slack',
 };
 const CLOUD_COLORS = {
-  'Agentforce':'#2a78d6','Data Cloud':'#1baf7a','Tableau':'#eb6834',
-  'MuleSoft':'#6250d6','Platform':'#eda100','Revenue Cloud':'#e34948',
-  'Marketing Cloud':'#e87ba4','Commerce Cloud':'#008300','Industries':'#c98500',
-  'Slack':'#199e70','Other':'#898781'
+  'Agentforce':'#066afe','Data Cloud':'#2f2cb7','Tableau':'#e8762c',
+  'MuleSoft':'#7f45d4','Platform':'#7f8ced','Revenue Cloud':'#c8223e',
+  'Marketing Cloud':'#fe9339','Commerce Cloud':'#2e844a','Industries':'#b56800',
+  'Slack':'#41b658','Other':'#898781'
 };
 const CLOUD_ORDER = ['Agentforce','Data Cloud','Tableau','MuleSoft','Platform','Revenue Cloud','Marketing Cloud','Commerce Cloud','Industries','Slack','Other'];
 
@@ -635,87 +635,211 @@ function renderCloud() {
     return;
   }
 
-  // Aggregate hours by cloud and by course code
-  const cloudHrs = {}, cloudCourses = {}, courseTotals = {};
-  for (const c of camps) {
+  // Filter camps by current period
+  const periodMonths = new Set(getMonths(period));
+  const filteredCamps = camps.filter(c => periodMonths.has(c.ym));
+
+  // Aggregate hours by cloud, course, and instructor
+  const cloudHrs = {}, cloudCourses = {}, cloudInstructors = {};
+  // instCloudHrs[instIdx][cloud] = hrs — for "By Instructor" view
+  const instCloudHrs = {};
+
+  for (const c of filteredCamps) {
     const cloud = getCloud(c.n);
     const code = getCourseCode(c.n) || 'Other';
     cloudHrs[cloud] = (cloudHrs[cloud]||0) + c.h;
+
     if (!cloudCourses[cloud]) cloudCourses[cloud] = {};
     cloudCourses[cloud][code] = (cloudCourses[cloud][code]||0) + c.h;
-    courseTotals[code] = (courseTotals[code]||0) + c.h;
+
+    if (!cloudInstructors[cloud]) cloudInstructors[cloud] = {};
+    cloudInstructors[cloud][c.i] = (cloudInstructors[cloud][c.i]||0) + c.h;
+
+    if (!instCloudHrs[c.i]) instCloudHrs[c.i] = {};
+    instCloudHrs[c.i][cloud] = (instCloudHrs[c.i][cloud]||0) + c.h;
   }
 
   const grandTotal = Object.values(cloudHrs).reduce((s,v)=>s+v,0);
   const clouds = CLOUD_ORDER.filter(c => cloudHrs[c]);
 
-  // Build cloud bar rows
-  const maxHrs = Math.max(...clouds.map(c=>cloudHrs[c]));
-
-  const cloudRows = clouds.map(cloud => {
-    const hrs = cloudHrs[cloud];
-    const pct = grandTotal > 0 ? hrs/grandTotal*100 : 0;
-    const barW = maxHrs > 0 ? hrs/maxHrs*100 : 0;
-    const color = CLOUD_COLORS[cloud] || CLOUD_COLORS.Other;
-    // Top 3 courses for this cloud
-    const topCourses = Object.entries(cloudCourses[cloud])
-      .sort((a,b)=>b[1]-a[1]).slice(0,3)
-      .map(([code,h])=>`<span style="background:var(--bg);border-radius:3px;padding:1px 5px;font-size:10px;margin-right:4px">${code} <span style="color:var(--text3)">${fmt(h)}h</span></span>`).join('');
-    return `<div class="hbar-row" data-cloud="${cloud}" style="cursor:pointer;margin-bottom:14px">
-      <div class="hbar-label" style="width:130px;font-weight:600" title="${cloud}">${cloud}</div>
-      <div style="flex:1">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <div style="flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden;position:relative">
-            <div style="height:100%;width:${barW.toFixed(1)}%;background:${color};border-radius:4px;opacity:0.85;transition:width .4s"></div>
-          </div>
-          <div style="width:70px;text-align:right;font-size:12px;color:var(--text2)">${fmt(hrs)}</div>
-          <div style="width:40px;text-align:right;font-size:11px;font-weight:600;color:${color}">${fmtPct(pct)}</div>
-        </div>
-        <div style="padding-left:2px">${topCourses}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  div.innerHTML = `
-    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;font-style:italic">AMER Salesforce campaign data only. Click a cloud to see course breakdown.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px">
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Hours by Cloud</div>
-        <div id="cloud-bars">${cloudRows}</div>
-      </div>
-      <div id="cloud-detail" style="min-height:200px">
-        <div style="font-size:12px;color:var(--text3);padding-top:40px;text-align:center">← Click a cloud to see course detail</div>
-      </div>
-    </div>`;
-
-  // Wire click → course detail
-  div.querySelectorAll('[data-cloud]').forEach(el => {
-    el.addEventListener('click', () => {
-      const cloud = el.dataset.cloud;
+  // ── "By Cloud" panel ──────────────────────────────────────────────────────
+  function buildCloudPanel() {
+    const maxHrs = clouds.length ? Math.max(...clouds.map(c=>cloudHrs[c])) : 1;
+    const cloudRows = clouds.map(cloud => {
+      const hrs = cloudHrs[cloud];
+      const pct = grandTotal > 0 ? hrs/grandTotal*100 : 0;
+      const barW = maxHrs > 0 ? hrs/maxHrs*100 : 0;
       const color = CLOUD_COLORS[cloud] || CLOUD_COLORS.Other;
-      const courses = Object.entries(cloudCourses[cloud]).sort((a,b)=>b[1]-a[1]);
-      const maxC = courses[0][1];
-      const courseRows = courses.map(([code,h]) => {
-        const w = maxC>0 ? h/maxC*100 : 0;
-        const pct = cloudHrs[cloud]>0 ? h/cloudHrs[cloud]*100 : 0;
-        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <div style="width:80px;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0">${code}</div>
-          <div style="flex:1;height:16px;background:var(--bg);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${w.toFixed(1)}%;background:${color};opacity:0.75;border-radius:3px"></div>
+      const topCourses = Object.entries(cloudCourses[cloud])
+        .sort((a,b)=>b[1]-a[1]).slice(0,3)
+        .map(([code,h])=>`<span style="background:var(--bg);border-radius:3px;padding:1px 5px;font-size:10px;margin-right:4px">${code} <span style="color:var(--text3)">${fmt(h)}h</span></span>`).join('');
+      return `<div class="hbar-row" data-cloud="${cloud}" style="cursor:pointer;margin-bottom:14px">
+        <div class="hbar-label" style="width:130px;font-weight:600" title="${cloud}">${cloud}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${barW.toFixed(1)}%;background:${color};border-radius:4px;opacity:0.85;transition:width .4s"></div>
+            </div>
+            <div style="width:70px;text-align:right;font-size:12px;color:var(--text2)">${fmt(hrs)}</div>
+            <div style="width:40px;text-align:right;font-size:11px;font-weight:600;color:${color}">${fmtPct(pct)}</div>
           </div>
-          <div style="width:55px;text-align:right;font-size:11px;color:var(--text2)">${fmt(h)} hrs</div>
-          <div style="width:36px;text-align:right;font-size:10px;color:var(--text3)">${fmtPct(pct)}</div>
-        </div>`;
-      }).join('');
-      document.getElementById('cloud-detail').innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
-          <span style="font-size:13px;font-weight:700;color:var(--text)">${cloud}</span>
-          <span style="font-size:12px;color:var(--text3);margin-left:4px">${fmt(cloudHrs[cloud])} hrs total · ${courses.length} courses</span>
+          <div style="padding-left:2px">${topCourses}</div>
         </div>
-        ${courseRows}`;
-    });
-  });
+      </div>`;
+    }).join('');
+
+    return `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Hours by Cloud</div>
+          <div id="cloud-bars">${cloudRows}</div>
+        </div>
+        <div id="cloud-detail" style="min-height:200px">
+          <div style="font-size:12px;color:var(--text3);padding-top:40px;text-align:center">← Click a cloud to see courses &amp; instructors</div>
+        </div>
+      </div>`;
+  }
+
+  // ── "By Instructor" panel ─────────────────────────────────────────────────
+  function buildInstructorPanel() {
+    // Build instructor rows sorted by total cloud hours desc
+    const instMap = {};
+    D.instructors.forEach(inst => { instMap[inst.i] = inst; });
+    const instRows = Object.entries(instCloudHrs)
+      .map(([iStr, cloudMap]) => {
+        const inst = instMap[parseInt(iStr)];
+        if (!inst) return null;
+        const total = Object.values(cloudMap).reduce((s,v)=>s+v,0);
+        return { inst, cloudMap, total };
+      })
+      .filter(Boolean)
+      .sort((a,b) => b.total - a.total);
+
+    if (!instRows.length) return '<p style="color:var(--text3);padding:20px">No data for this period.</p>';
+
+    // Determine which clouds appear (ordered)
+    const activeClouds = CLOUD_ORDER.filter(c => clouds.includes(c));
+
+    // Build stacked bar for each instructor
+    const maxTotal = instRows[0].total;
+    const rows = instRows.map(({inst, cloudMap, total}) => {
+      const barW = maxTotal > 0 ? total/maxTotal*100 : 0;
+      // Stacked segments
+      let segments = '';
+      let cumPct = 0;
+      activeClouds.forEach(cloud => {
+        const h = cloudMap[cloud] || 0;
+        if (!h) return;
+        const segW = total > 0 ? h/total*100 : 0;
+        const color = CLOUD_COLORS[cloud] || CLOUD_COLORS.Other;
+        segments += `<div title="${cloud}: ${fmt(h)} hrs" style="height:100%;width:${segW.toFixed(2)}%;background:${color};flex-shrink:0"></div>`;
+        cumPct += segW;
+      });
+      // Cloud dot legend for this instructor
+      const dots = activeClouds.filter(c => cloudMap[c]).map(c => {
+        const color = CLOUD_COLORS[c] || CLOUD_COLORS.Other;
+        return `<span title="${c}: ${fmt(cloudMap[c])} hrs" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:2px"></span>`;
+      }).join('');
+
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:140px;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${inst.name}">${inst.name}</div>
+        <div style="flex:1;height:18px;background:var(--bg);border-radius:3px;overflow:hidden;display:flex" data-inst="${inst.i}" style="cursor:pointer">
+          <div style="display:flex;width:${barW.toFixed(1)}%;height:100%">${segments}</div>
+        </div>
+        <div style="width:52px;text-align:right;font-size:11px;color:var(--text2)">${fmt(total)} hrs</div>
+        <div style="width:60px;display:flex;gap:2px;align-items:center">${dots}</div>
+      </div>`;
+    }).join('');
+
+    // Legend
+    const legend = activeClouds.map(c => {
+      const color = CLOUD_COLORS[c] || CLOUD_COLORS.Other;
+      return `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:11px;color:var(--text2)"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${color}"></span>${c}</span>`;
+    }).join('');
+
+    return `
+      <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px">${legend}</div>
+      <div>${rows}</div>`;
+  }
+
+  // ── Wire up sub-view toggle ───────────────────────────────────────────────
+  let cloudSubView = 'cloud'; // 'cloud' | 'instructor'
+
+  function buildHTML() {
+    const content = cloudSubView === 'cloud' ? buildCloudPanel() : buildInstructorPanel();
+    return `
+      <p style="font-size:12px;color:var(--text3);margin-bottom:12px;font-style:italic">AMER campaign data only · ${fmt(grandTotal)} total hrs in ${period}</p>
+      <div style="display:flex;gap:6px;margin-bottom:16px">
+        <button id="csub-cloud" style="padding:4px 12px;border-radius:4px;border:1px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;background:${cloudSubView==='cloud'?'var(--accent)':'var(--bg)'};color:${cloudSubView==='cloud'?'#fff':'var(--text2)'}">By Cloud</button>
+        <button id="csub-inst" style="padding:4px 12px;border-radius:4px;border:1px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;background:${cloudSubView==='instructor'?'var(--accent)':'var(--bg)'};color:${cloudSubView==='instructor'?'#fff':'var(--text2)'}">By Instructor</button>
+      </div>
+      <div id="cloud-sub-content">${content}</div>`;
+  }
+
+  div.innerHTML = buildHTML();
+
+  function rebind() {
+    const cloudBtn = div.querySelector('#csub-cloud');
+    const instBtn = div.querySelector('#csub-inst');
+    if (cloudBtn) cloudBtn.addEventListener('click', () => { cloudSubView='cloud'; div.innerHTML=buildHTML(); rebind(); });
+    if (instBtn) instBtn.addEventListener('click', () => { cloudSubView='instructor'; div.innerHTML=buildHTML(); rebind(); });
+
+    if (cloudSubView === 'cloud') {
+      // Wire cloud bar click → course + instructor detail
+      div.querySelectorAll('[data-cloud]').forEach(el => {
+        el.addEventListener('click', () => {
+          const cloud = el.dataset.cloud;
+          const color = CLOUD_COLORS[cloud] || CLOUD_COLORS.Other;
+          const courses = Object.entries(cloudCourses[cloud]).sort((a,b)=>b[1]-a[1]);
+          const instructors = Object.entries(cloudInstructors[cloud]||{}).sort((a,b)=>b[1]-a[1]);
+          const maxC = courses[0][1];
+          const instMap = {};
+          D.instructors.forEach(inst => { instMap[inst.i] = inst; });
+
+          const courseRows = courses.map(([code,h]) => {
+            const w = maxC>0 ? h/maxC*100 : 0;
+            const pct = cloudHrs[cloud]>0 ? h/cloudHrs[cloud]*100 : 0;
+            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <div style="width:72px;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0">${code}</div>
+              <div style="flex:1;height:14px;background:var(--bg);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${w.toFixed(1)}%;background:${color};opacity:0.8;border-radius:3px"></div>
+              </div>
+              <div style="width:50px;text-align:right;font-size:11px;color:var(--text2)">${fmt(h)} h</div>
+              <div style="width:34px;text-align:right;font-size:10px;color:var(--text3)">${fmtPct(pct)}</div>
+            </div>`;
+          }).join('');
+
+          const instRows2 = instructors.slice(0,10).map(([iStr,h]) => {
+            const inst = instMap[parseInt(iStr)];
+            if (!inst) return '';
+            const pct = cloudHrs[cloud]>0 ? h/cloudHrs[cloud]*100 : 0;
+            const w = instructors[0][1]>0 ? h/instructors[0][1]*100 : 0;
+            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+              <div style="width:130px;font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${inst.name}">${inst.name}</div>
+              <div style="flex:1;height:12px;background:var(--bg);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${w.toFixed(1)}%;background:${color};opacity:0.6;border-radius:3px"></div>
+              </div>
+              <div style="width:46px;text-align:right;font-size:10px;color:var(--text2)">${fmt(h)} h</div>
+              <div style="width:32px;text-align:right;font-size:10px;color:var(--text3)">${fmtPct(pct)}</div>
+            </div>`;
+          }).join('');
+
+          document.getElementById('cloud-detail').innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
+              <span style="font-size:13px;font-weight:700;color:var(--text)">${cloud}</span>
+              <span style="font-size:12px;color:var(--text3);margin-left:4px">${fmt(cloudHrs[cloud])} hrs · ${courses.length} courses · ${instructors.length} instructors</span>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Courses</div>
+            ${courseRows}
+            <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px">Top Instructors</div>
+            ${instRows2}`;
+        });
+      });
+    }
+  }
+
+  rebind();
 }
 
 // ── Tab router ──────────────────────────────────────────────────────────────

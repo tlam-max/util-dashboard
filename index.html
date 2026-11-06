@@ -837,34 +837,48 @@ function renderCloud() {
 
   // ── "By Manager" panel ────────────────────────────────────────────────────
   function buildManagerPanel() {
+    // Build from full instructor roster (same source as the main By Manager tab)
     const instMap = {};
     D.instructors.forEach(inst => { instMap[inst.i] = inst; });
+
+    // Pre-aggregate cloud hours from camps by instructor index
     const mgrCloudHrs = {}, mgrTotals = {}, mgrDelivery = {};
+
+    // Seed every manager that exists in the instructor list so all appear
+    const allMgrs = [...new Set(D.instructors.map(i => i.manager || 'Unassigned'))];
+    allMgrs.forEach(mgr => {
+      mgrCloudHrs[mgr] = {};
+      mgrTotals[mgr] = 0;
+      mgrDelivery[mgr] = {course:0, workshop:0};
+    });
+
     for (const c of filteredCamps) {
       const inst = instMap[c.i];
       if (!inst) continue;
       const mgr = inst.manager || 'Unassigned';
       const cloud = getCloud(c.n);
-      if (!mgrCloudHrs[mgr]) mgrCloudHrs[mgr] = {};
       mgrCloudHrs[mgr][cloud] = (mgrCloudHrs[mgr][cloud]||0) + c.h;
-      mgrTotals[mgr] = (mgrTotals[mgr]||0) + c.h;
-      if (!mgrDelivery[mgr]) mgrDelivery[mgr] = {course:0,workshop:0};
+      mgrTotals[mgr] += c.h;
       if (WS_TYPES.has(c.t)) mgrDelivery[mgr].workshop += c.h;
       else mgrDelivery[mgr].course += c.h;
     }
-    const mgrs = Object.keys(mgrTotals).sort((a,b)=>mgrTotals[b]-mgrTotals[a]);
-    if (!mgrs.length) return '<p style="color:var(--text3);padding:20px">No data for this period.</p>';
-    const maxM = mgrTotals[mgrs[0]];
+
+    // Sort by total hours desc; managers with 0 go to bottom
+    const mgrs = allMgrs.sort((a,b) => mgrTotals[b] - mgrTotals[a]);
+    const maxM = Math.max(...mgrs.map(m => mgrTotals[m]), 1);
     const activeClouds = CLOUD_ORDER.filter(c => clouds.includes(c));
+
     const legend = activeClouds.map(c => {
       const color = CLOUD_COLORS[c] || CLOUD_COLORS.Other;
       return `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:11px;color:var(--text2)"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${color}"></span>${c}</span>`;
     }).join('');
+
     const rows = mgrs.map(mgr => {
       const total = mgrTotals[mgr];
       const barW = maxM>0 ? total/maxM*100 : 0;
       const cmap = mgrCloudHrs[mgr]||{};
-      const del = mgrDelivery[mgr]||{course:0,workshop:0};
+      const del = mgrDelivery[mgr];
+      const teamSize = D.instructors.filter(i=>(i.manager||'Unassigned')===mgr).length;
       let segs = '';
       activeClouds.forEach(cloud => {
         const h = cmap[cloud]||0;
@@ -873,19 +887,22 @@ function renderCloud() {
         const color = CLOUD_COLORS[cloud]||CLOUD_COLORS.Other;
         segs += `<div title="${cloud}: ${fmt(h)} hrs" style="height:100%;width:${segW.toFixed(2)}%;background:${color};flex-shrink:0"></div>`;
       });
-      const firstName = mgr.split(' ')[0];
+      const noData = total === 0;
       return `<div style="margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px">
-          <div style="width:110px;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${mgr}">${firstName}</div>
+          <div style="width:110px;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${mgr}">${mgr.split(' ')[0]} <span style="font-weight:400;color:var(--text3)">(${teamSize})</span></div>
           <div style="flex:1;height:20px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex">
-            <div style="display:flex;width:${barW.toFixed(1)}%;height:100%">${segs}</div>
+            ${noData
+              ? `<div style="width:100%;height:100%;display:flex;align-items:center;padding-left:8px"><span style="font-size:10px;color:var(--text3);font-style:italic">No AMER campaign data</span></div>`
+              : `<div style="display:flex;width:${barW.toFixed(1)}%;height:100%">${segs}</div>`
+            }
           </div>
-          <div style="width:62px;text-align:right;font-size:12px;color:var(--text2)">${fmt(total)} hrs</div>
+          <div style="width:62px;text-align:right;font-size:12px;color:${noData?'var(--text3)':'var(--text2)'}">${noData ? '—' : fmt(total)+' hrs'}</div>
         </div>
-        <div style="display:flex;gap:10px;padding-left:120px;font-size:10px;color:var(--text3)">
+        ${!noData ? `<div style="display:flex;gap:10px;padding-left:120px;font-size:10px;color:var(--text3)">
           <span>Course ${fmt(del.course)} h (${fmtPct(total>0?del.course/total*100:0)})</span>
           <span>Workshop ${fmt(del.workshop)} h (${fmtPct(total>0?del.workshop/total*100:0)})</span>
-        </div>
+        </div>` : ''}
       </div>`;
     }).join('');
     return `<div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px">${legend}</div><div>${rows}</div>`;

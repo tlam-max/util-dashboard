@@ -1204,6 +1204,15 @@ function renderSubcoChart(filtered, clouds, byCloudMonth, totalDays) {
 
   let datasets, legendItems, title;
 
+  function hexToRgb(hex) {
+    return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+  }
+  function shadeColor(hex, frac) {
+    const [r,g,b] = hexToRgb(hex);
+    const mix = c => Math.round(c + (255-c)*frac);
+    return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+  }
+
   if (subcoSelectedCloud) {
     // Drilldown: courses within the selected cloud, stacked by month
     const cloud = subcoSelectedCloud;
@@ -1225,17 +1234,7 @@ function renderSubcoChart(filtered, clouds, byCloudMonth, totalDays) {
     const topCourses = courseTotals.slice(0, TOP_N).map(([c])=>c);
     const restCourses = courseTotals.slice(TOP_N).map(([c])=>c);
 
-    // Generate shades of the cloud color for top courses
-    function hexToRgb(hex) {
-      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-      return [r,g,b];
-    }
-    function shadeColor(hex, frac) {
-      // frac 0=dark, 1=light — blend toward white
-      const [r,g,b] = hexToRgb(hex);
-      const mix = (c) => Math.round(c + (255-c)*frac);
-      return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
-    }
+    // Generate shades of the cloud color for courses within this cloud
     const shades = topCourses.map((_,i) => shadeColor(cloudColor, i / Math.max(topCourses.length, 1) * 0.65));
 
     datasets = topCourses.map((course, i) => ({
@@ -1244,7 +1243,6 @@ function renderSubcoChart(filtered, clouds, byCloudMonth, totalDays) {
       backgroundColor: shades[i],
       stack:'s', borderWidth:0, borderRadius:2
     }));
-    // Lump rest into "Other courses"
     if (restCourses.length) {
       const otherData = SUBCO_MONTHS.map(m => {
         const v = restCourses.reduce((s,c) => s+(byCourseMonth[c]?.[m]||0), 0);
@@ -1256,15 +1254,46 @@ function renderSubcoChart(filtered, clouds, byCloudMonth, totalDays) {
       ...(restCourses.length?[{label:'Other courses',color:'#aaa'}]:[])];
     title = `${cloud} — Days by Course & Month`;
   } else {
-    // Overview: all clouds stacked
-    datasets = clouds.map(cloud => ({
-      label: cloud,
-      data: SUBCO_MONTHS.map(m => Math.round(byCloudMonth[cloud]?.[m]||0)||null),
-      backgroundColor: CLOUD_COLORS[cloud]||'#aaa',
-      stack:'s', borderWidth:0, borderRadius:2
-    }));
+    // Overview: all courses stacked, each colored by its cloud
+    const byCourseMonth = {};
+    for (const r of filtered) {
+      const course = r[2], month = SUBCO_MONTHS[r[1]], days = r[5];
+      if (!byCourseMonth[course]) byCourseMonth[course] = {};
+      byCourseMonth[course][month] = (byCourseMonth[course][month]||0) + days;
+    }
+    const courseTotals = Object.entries(byCourseMonth)
+      .map(([c, m]) => [c, Object.values(m).reduce((s,v)=>s+v,0)])
+      .sort((a,b) => b[1]-a[1]);
+    const TOP_N = 15;
+    const topCourses = courseTotals.slice(0, TOP_N).map(([c])=>c);
+    const restCourses = courseTotals.slice(TOP_N).map(([c])=>c);
+
+    // Each course gets its cloud color, with slight shade variation per course within same cloud
+    const cloudCourseIdx = {};
+    datasets = topCourses.map(course => {
+      const cl = getCloud(course);
+      const base = CLOUD_COLORS[cl] || '#aaa';
+      cloudCourseIdx[cl] = (cloudCourseIdx[cl] || 0);
+      const shade = shadeColor(base, cloudCourseIdx[cl] * 0.18);
+      cloudCourseIdx[cl]++;
+      return {
+        label: course,
+        data: SUBCO_MONTHS.map(m => Math.round(byCourseMonth[course]?.[m]||0)||null),
+        backgroundColor: shade,
+        stack:'s', borderWidth:0, borderRadius:2
+      };
+    });
+    if (restCourses.length) {
+      const otherData = SUBCO_MONTHS.map(m => {
+        const v = restCourses.reduce((s,c) => s+(byCourseMonth[c]?.[m]||0), 0);
+        return Math.round(v)||null;
+      });
+      datasets.push({ label:'Other courses', data:otherData, backgroundColor:'#bbb', stack:'s', borderWidth:0, borderRadius:2 });
+    }
+    // Legend: show clouds (not every course)
     legendItems = clouds.map(c => ({label:c, color:CLOUD_COLORS[c]||'#aaa'}));
-    title = 'Days by Month & Cloud — FY27';
+    if (restCourses.length) legendItems.push({label:'Other courses', color:'#bbb'});
+    title = 'Days by Course & Month — FY27';
   }
 
   // Update card title

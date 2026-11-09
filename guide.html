@@ -598,7 +598,7 @@
   <table>
     <tr><th>Cloud</th><th>Color</th><th>Hex</th></tr>
     <tr><td>Agentforce</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#066afe;vertical-align:middle;margin-right:6px"></span>Blue</td><td><code>#066afe</code></td></tr>
-    <tr><td>Data Cloud</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2f2cb7;vertical-align:middle;margin-right:6px"></span>Indigo</td><td><code>#2f2cb7</code></td></tr>
+    <tr><td>Data 360</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2f2cb7;vertical-align:middle;margin-right:6px"></span>Indigo</td><td><code>#2f2cb7</code></td></tr>
     <tr><td>Tableau</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e8762c;vertical-align:middle;margin-right:6px"></span>Orange</td><td><code>#e8762c</code></td></tr>
     <tr><td>MuleSoft</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7f45d4;vertical-align:middle;margin-right:6px"></span>Purple</td><td><code>#7f45d4</code></td></tr>
     <tr><td>Platform</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7f8ced;vertical-align:middle;margin-right:6px"></span>Slate blue</td><td><code>#7f8ced</code></td></tr>
@@ -609,6 +609,41 @@
     <tr><td>Industries</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#b56800;vertical-align:middle;margin-right:6px"></span>Brown</td><td><code>#b56800</code></td></tr>
     <tr><td>Other</td><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#898781;vertical-align:middle;margin-right:6px"></span>Gray</td><td><code>#898781</code></td></tr>
   </table>
+
+  <h4>How cloud classification works</h4>
+  <p>Because there is no dedicated cloud/product field on Campaign records in Salesforce, the dashboard classifies each campaign by extracting a course code from the campaign name and matching it to a known prefix. The process is:</p>
+  <ol style="margin:8px 0 12px 20px;color:var(--text2);">
+    <li>Extract the course code from the campaign name (e.g. <code>AMER - TTD101 - 2026-05-07</code> → <code>TTD101</code>). The extractor handles codes between dashes, spaces, or parentheses, and at the end of the name.</li>
+    <li>Match the alphabetic prefix of the code (<code>TTD</code>) to the cloud mapping table.</li>
+    <li>If no code is found, fall back to keyword scanning of the full campaign name (e.g. "Anypoint" → MuleSoft, "Health Cloud" → Industries).</li>
+    <li>If neither matches, the campaign goes into <strong>Other</strong>.</li>
+  </ol>
+  <p>The full prefix-to-cloud mapping used by the dashboard:</p>
+  <table>
+    <tr><th>Cloud</th><th>Course code prefixes</th></tr>
+    <tr><td>Agentforce</td><td><code>AGT</code> <code>AFS</code> <code>AIF</code></td></tr>
+    <tr><td>Data 360</td><td><code>SDC</code></td></tr>
+    <tr><td>Tableau</td><td><code>TTD</code> <code>TAB</code> <code>TVA</code> <code>TTP</code> <code>TSA</code> <code>TNX</code> <code>ADX</code></td></tr>
+    <tr><td>MuleSoft</td><td><code>MSA</code> <code>ARC</code> <code>OPS</code> <code>MAX</code> + DEX (except DEX450/DEX602)</td></tr>
+    <tr><td>Platform</td><td><code>OMS</code> <code>PDX</code> <code>BSX</code> <code>FSL</code> <code>BRE</code> <code>SFS</code> <code>CRT</code> <code>INS</code> <code>ASC</code> <code>SSC</code> <code>DEX450</code> <code>DEX602</code></td></tr>
+    <tr><td>Revenue Cloud</td><td><code>REV</code></td></tr>
+    <tr><td>Marketing Cloud</td><td><code>MKT</code> <code>MOC</code></td></tr>
+    <tr><td>Commerce Cloud</td><td><code>CCD</code> <code>CCM</code> <code>B2B</code> <code>B2C</code></td></tr>
+    <tr><td>Industries</td><td><code>IND</code> <code>DGN</code> <code>DSF</code> <code>LSC</code></td></tr>
+    <tr><td>Slack</td><td><code>SLK</code></td></tr>
+  </table>
+  <div class="callout amber">
+    <p><strong>Bootcamp and HOT records are intentionally left as Other.</strong> Campaigns named <code>AMER_Bootcamp_*</code> and <code>AMER_HOT_*</code> do not follow the standard naming convention and cannot be reliably classified. They remain in Other until the underlying data is corrected. This is a known data quality issue — see <a href="#known-issues">Known Issues</a>.</p>
+  </div>
+
+  <h4>The "Other" detail panel — monitoring unclassified campaigns</h4>
+  <p><strong>Click the Other bar</strong> in the By Cloud view to see the full list of unclassified campaigns, sorted by hours. The panel header shows the count of unclassified campaigns. Use this list to:</p>
+  <ul>
+    <li>Identify campaigns with unusual naming that could be re-classified with a prefix rule change</li>
+    <li>Spot bootcamp and HOT records to monitor their volume over time</li>
+    <li>Share with the Ops team as evidence for data cleanup requests</li>
+  </ul>
+  <p>Each row shows the full campaign name, hours, and percentage of the Other total. As campaigns get correctly classified (either through naming fixes or by adding a <code>Cloud__c</code> field in Salesforce), they will automatically disappear from this list on the next data refresh.</p>
 
   <h3>By Instructor tab</h3>
   <p>Searchable, filterable table of all active instructors. Columns: name, region, manager, hours by type, total, % of target, pace indicator. Sortable by any column. Filterable by <strong>name search</strong>, <strong>region dropdown</strong>, and <strong>manager dropdown</strong>. <strong>Click an instructor name</strong> to open their detail modal.</p>
@@ -670,12 +705,12 @@
     <tr><td><strong>Report type</strong></td><td>Campaigns with Contacts with User (<code>Campaigns_with_Contacts_with_User__c</code>) — custom report type that joins Campaign → Contact → User via Campaign Owner</td></tr>
   </table>
 
-  <h3>Filter structure (16 filters)</h3>
-  <p>The report uses <strong>Boolean logic</strong>: <code>1 AND 2 AND 3 AND 4 AND 5 AND 6 AND 7 AND 8 AND 9 AND (10 OR 11 OR 12 OR 13 OR 14 OR 15 OR 16)</code>.</p>
-  <p>Filters 1–9 are base criteria that apply to all records. Filters 10–16 are one-per-manager-group name filters — a campaign record must match <em>at least one</em> of these to be included.</p>
+  <h3>Filter structure (18 filters)</h3>
+  <p>The report uses <strong>Boolean logic</strong>: <code>1 AND 2 AND 3 AND 4 AND 5 AND 6 AND 7 AND 8 AND 9 AND (10 OR 11 OR 12 OR 13 OR 14 OR 15 OR 16 OR 17 OR 18)</code>.</p>
+  <p>Filters 1–9 are base criteria. Filters 10–18 are <strong>one filter per manager</strong> containing their team's full instructor names. A campaign must match at least one manager group to be included.</p>
 
   <table>
-    <tr><th>#</th><th>Field</th><th>Operator</th><th>Value / Purpose</th></tr>
+    <tr><th>#</th><th>Field</th><th>Operator</th><th>Manager / Purpose</th></tr>
     <tr><td>1</td><td><code>Contact.Instructor_Status__c</code></td><td>equals</td><td>Certified Instructor</td></tr>
     <tr><td>2</td><td><code>User.IsActive</code></td><td>equals</td><td>True</td></tr>
     <tr><td>3</td><td><code>Campaign.StartDate</code></td><td>≥</td><td>2026-02-01 (FY27 start)</td></tr>
@@ -685,33 +720,40 @@
     <tr><td>7</td><td><code>Contact.Account.Name</code></td><td>equals</td><td>salesforce.com</td></tr>
     <tr><td>8</td><td><code>Contact.Active_Contact__c</code></td><td>equals</td><td>True</td></tr>
     <tr><td>9</td><td><code>Campaign.Name</code></td><td>does not contain</td><td>(old), test — excludes system/test records</td></tr>
-    <tr><td>10</td><td><code>User.Name</code></td><td>contains</td><td>Andres Perez (v2.0), Eric Lynch, Gopal Erusu, Guillermo Medrano, Joseph Wilson, Joy Dixon (v2.0), Juraj Suja, Melody Yang, Rod Curvelo, Stuart Werner, Teo Marcelo, Vincent Lowe</td></tr>
-    <tr><td>11</td><td><code>User.Name</code></td><td>contains</td><td>Alyse DeBonnett, Bhalinder Singh, Brian Richardson, Candice Belandres, Elizabeth Jones, Jim Lepick, Kevin Johnson, Mike Clark, Ram Subramani</td></tr>
-    <tr><td>12</td><td><code>User.Name</code></td><td>contains</td><td>Andrew Hamlin, Ben Conoley, Brittany Connolly, Chris Wirthwein, Christina Obligar, Debra Speer, Jake Emrich, Lisa Tulchin, Patrick Griffith, Ruth Deckard, Sophia Zurcher</td></tr>
-    <tr><td>13</td><td><code>User.Name</code></td><td>contains</td><td>Andres Cespedes, Gabriel Ostolaza Alfaro, Ingrid de Moraes, Isabelle Faure, Laura Maffezzini, Max Golov, Sebastien Colas, Simon Connock, Steven Smith</td></tr>
-    <tr><td>14</td><td><code>User.Name</code></td><td>contains</td><td>Andrea Carvalho, Billy Flynn, Christian Zapla, Daniel Monk, Darren Hendrick, Marc Kerhoas, Mathias Artaud, Nidhi Jain, Paul Killeen</td></tr>
-    <tr><td>15</td><td><code>User.Name</code></td><td>contains</td><td>A Architya, Aman Pandey, Gargi Singh, Junaid Ahmed Shaik, Krishna Chaitanya, Mohd Wasil Khan, Mrunal Khandagale, Ram Undadi, Saravan Bhetanabhotla, Shahbaz Nasimi <em>(Affa Khatoon's team)</em></td></tr>
-    <tr><td>16</td><td><code>User.Name</code></td><td>contains</td><td>Biswajit Mohanty, Carlos Torres, Elaina Williams, Freya Castro, Harini Shah, Javier Garcia, Julian Aguilar, Krithika Pai, Md Rahbar Zaman, Monish Aditya, Shani Elsa Shaji, Vania Ramirez <em>(Mohina Sheikh + Amanda Ortega's teams)</em></td></tr>
+    <tr><td>10</td><td><code>User.Name</code></td><td>contains</td><td><strong>Tammy Lam's team (AMER)</strong> — Andres Perez (v2.0), Eric Lynch, Gopal Erusu, Guillermo Medrano, Joseph Wilson, Joy Dixon (v2.0), Juraj Suja, Melody Yang, Stuart Werner, Teo Marcelo, Vincent Lowe</td></tr>
+    <tr><td>11</td><td><code>User.Name</code></td><td>contains</td><td><strong>Mari Zahm's team (AMER)</strong> — Alyse DeBonnett, Bhalinder Singh, Brian Richardson, Candice Belandres, Elizabeth Jones, Jim Lepick, Kevin Johnson, Mike Clark, Ram Subramani</td></tr>
+    <tr><td>12</td><td><code>User.Name</code></td><td>contains</td><td><strong>Wendy Braid's team (AMER)</strong> — Andrew Hamlin, Ben Conoley, Christina Obligar, Lisa Tulchin, Sophia Zurcher</td></tr>
+    <tr><td>13</td><td><code>User.Name</code></td><td>contains</td><td><strong>Brent Feller's team (AMER)</strong> — Brittany Connolly, Chris Wirthwein, Debra Speer, Jake Emrich, Patrick Griffith, Rod Curvelo, Ruth Deckard</td></tr>
+    <tr><td>14</td><td><code>User.Name</code></td><td>contains</td><td><strong>Alex Theedom's team (EMEA)</strong> — Andres Cespedes, Gabriel Ostolaza Alfaro, Ingrid de Moraes, Isabelle Faure, Laura Maffezzini, Max Golov, Sebastien Colas, Simon Connock, Steven Smith</td></tr>
+    <tr><td>15</td><td><code>User.Name</code></td><td>contains</td><td><strong>Brendan Keating's team (EMEA)</strong> — Andrea Carvalho, Billy Flynn, Christian Zapla, Daniel Monk, Darren Hendrick, Marc Kerhoas, Mathias Artaud, Nidhi Jain, Paul Killeen</td></tr>
+    <tr><td>16</td><td><code>User.Name</code></td><td>contains</td><td><strong>Affa Khatoon's team (APAC)</strong> — A Architya, Aman Pandey, Gargi Singh, Junaid Ahmed Shaik, Krishna Chaitanya Naraharisetti, Mohd Wasil Khan, Mrunal Khandagale, Ram Undadi, Saravan Bhetanabhotia, Shahbaz Nasimi</td></tr>
+    <tr><td>17</td><td><code>User.Name</code></td><td>contains</td><td><strong>Mohina Sheikh's team (APAC)</strong> — Biswajit Mohanty, Harini Shah, Krithika Pai, Md Rahbar Zaman, Monish Aditiya, Shani Elsa Shaji</td></tr>
+    <tr><td>18</td><td><code>User.Name</code></td><td>contains</td><td><strong>Amanda Ortega's team (LATAM)</strong> — Carlos Torres, Elaina Williams, Freya Castro, Javier Garcia Salcedo, Julián Aguilar, Vania Ramirez</td></tr>
   </table>
 
   <div class="callout amber">
-    <p><strong>Why full names instead of last names?</strong> An earlier version of the report used <code>User.LastName contains</code> with a separate exclusion filter. This was replaced with <code>User.Name contains</code> full names to eliminate false positives (e.g. last name "Singh" matching non-instructors) and make the filter set self-documenting. Filters 10–16 replaced the previous last-name filter approach.</p>
+    <p><strong>Why full names instead of last names?</strong> An earlier version used <code>User.LastName contains</code> with an exclusion filter. This was replaced with <code>User.Name contains</code> full names to eliminate false positives and make each filter self-documenting. Each manager now has their own dedicated filter (10–18) — one filter per manager, not one for all AMER or all EMEA.</p>
+  </div>
+  <div class="callout amber">
+    <p><strong>Maintenance:</strong> When an instructor joins or leaves a team, their name must be manually added to or removed from the relevant filter in the Salesforce report. This is a known limitation — see <a href="#known-issues">Known Issues</a> and the FY28 data requirements for a long-term fix using <code>User.ManagerId</code>.</p>
   </div>
 
-  <h3>Why filters 15 and 16 exist but may show no results</h3>
-  <p>Filters 15 and 16 are in the report and are correctly structured. However, APAC and LATAM campaigns are owned by the <strong>"TandC Integrations"</strong> integration user — the instructor is stored in <code>Campaign.Instructor__c</code> (a Contact lookup field), not as Campaign Owner. Because the report type joins Campaign → User via <strong>Campaign Owner</strong>, <code>User.Name</code> filters can never match APAC/LATAM campaigns regardless of what names are listed. See <a href="#known-issues">Known Issues</a> for the full explanation and the path to fix it.</p>
+  <h3>Why filters 16, 17, and 18 exist but may show no results</h3>
+  <p>Filters 16–18 (Affa Khatoon, Mohina Sheikh, Amanda Ortega) are correctly configured but produce no results because APAC and LATAM campaigns are owned by the <strong>TandC Integrations</strong> integration user — the instructor is stored in <code>Campaign.Instructor__c</code> (a Contact lookup), not as Campaign Owner. See <a href="#known-issues">Known Issues</a> for the full explanation.</p>
 
   <h3>Manager ManagerId updates</h3>
-  <p>As part of setting up the report filter groups, 14 User records in the T&amp;C org were updated to set the correct <code>ManagerId</code> field, matching the manager assignments shown in the dashboard. This was done via bulk upsert using the Salesforce CLI (<code>sf data upsert bulk</code>). The manager assignments are:</p>
+  <p>As part of setting up the report filter groups, User records in the T&amp;C org were updated to set the correct <code>ManagerId</code> field via bulk upsert using the Salesforce CLI. The current manager-to-filter assignments:</p>
   <table>
-    <tr><th>Manager</th><th>Team (filter #)</th></tr>
-    <tr><td>Teo Marcelo</td><td>Filter 10 — AMER team 1</td></tr>
-    <tr><td>Joy Dixon</td><td>Filter 11 — AMER team 2</td></tr>
-    <tr><td>Debra Speer</td><td>Filter 12 — AMER team 3</td></tr>
-    <tr><td>Sebastien Colas</td><td>Filter 13 — EMEA</td></tr>
-    <tr><td>Andrea Carvalho</td><td>Filter 14 — EMEA/mixed</td></tr>
-    <tr><td>Affa Khatoon</td><td>Filter 15 — APAC</td></tr>
-    <tr><td>Mohina Sheikh / Amanda Ortega</td><td>Filter 16 — APAC/LATAM</td></tr>
+    <tr><th>Filter</th><th>Manager</th><th>Region</th></tr>
+    <tr><td>10</td><td>Tammy Lam</td><td>AMER</td></tr>
+    <tr><td>11</td><td>Mari Zahm</td><td>AMER</td></tr>
+    <tr><td>12</td><td>Wendy Braid</td><td>AMER</td></tr>
+    <tr><td>13</td><td>Brent Feller</td><td>AMER</td></tr>
+    <tr><td>14</td><td>Alex Theedom</td><td>EMEA</td></tr>
+    <tr><td>15</td><td>Brendan Keating</td><td>EMEA</td></tr>
+    <tr><td>16</td><td>Affa Khatoon</td><td>APAC</td></tr>
+    <tr><td>17</td><td>Mohina Sheikh</td><td>APAC</td></tr>
+    <tr><td>18</td><td>Amanda Ortega</td><td>LATAM</td></tr>
   </table>
 </section>
 
@@ -720,7 +762,7 @@
   <h2>Known Issues &amp; Follow-ups</h2>
 
   <div class="callout amber">
-    <p><strong>Action required:</strong> The items below are open gaps that need follow-up. They do not affect AMER or EMEA data — only APAC and LATAM.</p>
+    <p><strong>Action required:</strong> The items below are open gaps that need follow-up. A full list of all data quality issues found during this project — plus the clean-data standards required for FY28 — is documented in the <strong>T&amp;C Data Quality &amp; FY28 Requirements</strong> document.</p>
   </div>
 
   <h3>APAC / LATAM campaigns missing from the Salesforce report</h3>

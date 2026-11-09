@@ -666,6 +666,7 @@ function renderCloud() {
   const cloudDelivery = {};
   // instCloudHrs[instIdx][cloud] = hrs — for "By Instructor" view
   const instCloudHrs = {};
+  let cloudCampNames = {};
 
   const WS_TYPES = new Set(['W','PW']);
 
@@ -686,6 +687,12 @@ function renderCloud() {
 
     if (!instCloudHrs[c.i]) instCloudHrs[c.i] = {};
     instCloudHrs[c.i][cloud] = (instCloudHrs[c.i][cloud]||0) + c.h;
+
+    // Track full campaign names for Other (for monitoring panel)
+    if (cloud === 'Other') {
+      if (!cloudCampNames) cloudCampNames = {};
+      cloudCampNames[c.n] = (cloudCampNames[c.n]||0) + c.h;
+    }
   }
 
   const grandTotal = Object.values(cloudHrs).reduce((s,v)=>s+v,0);
@@ -974,16 +981,24 @@ function renderCloud() {
           const instMap = {};
           D.instructors.forEach(inst => { instMap[inst.i] = inst; });
 
-          const courseRows = courses.map(([code,h]) => {
-            const w = maxC>0 ? h/maxC*100 : 0;
+          // For Other: show full campaign names instead of course codes
+          const isOther = cloud === 'Other';
+          const courseEntries = isOther
+            ? Object.entries(cloudCampNames||{}).sort((a,b)=>b[1]-a[1])
+            : courses;
+          const maxCE = courseEntries.length ? courseEntries[0][1] : 1;
+
+          const courseRows = courseEntries.map(([label,h]) => {
+            const w = maxCE>0 ? h/maxCE*100 : 0;
             const pct = cloudHrs[cloud]>0 ? h/cloudHrs[cloud]*100 : 0;
+            const displayLabel = isOther
+              ? `<div style="flex:1;min-width:0;font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${label}">${label}</div>`
+              : `<div style="width:72px;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0">${label}</div>`;
             return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <div style="width:72px;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0">${code}</div>
-              <div style="flex:1;height:14px;background:var(--bg);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:${w.toFixed(1)}%;background:${color};opacity:0.8;border-radius:3px"></div>
-              </div>
-              <div style="width:50px;text-align:right;font-size:11px;color:var(--text2)">${fmt(h)} h</div>
-              <div style="width:34px;text-align:right;font-size:10px;color:var(--text3)">${fmtPct(pct)}</div>
+              ${displayLabel}
+              ${isOther ? '' : `<div style="flex:1;height:14px;background:var(--bg);border-radius:3px;overflow:hidden"><div style="height:100%;width:${w.toFixed(1)}%;background:${color};opacity:0.8;border-radius:3px"></div></div>`}
+              <div style="width:50px;text-align:right;font-size:11px;color:var(--text2);flex-shrink:0">${fmt(h)} h</div>
+              <div style="width:34px;text-align:right;font-size:10px;color:var(--text3);flex-shrink:0">${fmtPct(pct)}</div>
             </div>`;
           }).join('');
 
@@ -1007,7 +1022,7 @@ function renderCloud() {
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
               <div style="width:10px;height:10px;border-radius:50%;background:${color}"></div>
               <span style="font-size:13px;font-weight:700;color:var(--text)">${cloud}</span>
-              <span style="font-size:12px;color:var(--text3);margin-left:4px">${fmt(totalHrs)} hrs · ${courses.length} courses · ${instructors.length} instructors</span>
+              <span style="font-size:12px;color:var(--text3);margin-left:4px">${fmt(totalHrs)} hrs · ${isOther ? courseEntries.length + ' campaigns (unclassified — click to review)' : courses.length + ' courses · ' + instructors.length + ' instructors'}</span>
             </div>
             <div style="display:flex;gap:14px;margin-bottom:12px;padding:8px 10px;background:var(--bg);border-radius:6px">
               <div style="font-size:11px;color:var(--text2)"><span style="display:inline-block;width:10px;height:10px;background:${color};opacity:0.92;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Course <strong>${fmt(del.course)} h</strong> (${fmtPct(totalHrs>0?del.course/totalHrs*100:0)})</div>

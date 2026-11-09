@@ -1142,6 +1142,7 @@ function renderSubco() {
       </div>
     </div>
 
+    <div id="subco-month-detail" style="margin-bottom:12px"></div>
     <div id="subco-detail"></div>
   `;
 
@@ -1170,13 +1171,13 @@ function renderSubco() {
 
   // ── Events ──────────────────────────────────────────────────────────────
   el.querySelectorAll('[data-reg]').forEach(b => b.addEventListener('click', () => {
-    subcoRegionF = b.dataset.reg; renderSubco();
+    subcoRegionF = b.dataset.reg; subcoSelectedCloud = null; renderSubco();
   }));
   el.querySelectorAll('[data-cld]').forEach(b => b.addEventListener('click', () => {
-    subcoCloudF = b.dataset.cld; renderSubco();
+    subcoCloudF = b.dataset.cld; subcoSelectedCloud = null; renderSubco();
   }));
   el.querySelectorAll('[data-co]').forEach(b => b.addEventListener('click', () => {
-    subcoCoF = b.dataset.co; renderSubco();
+    subcoCoF = b.dataset.co; subcoSelectedCloud = null; renderSubco();
   }));
   el.querySelectorAll('[data-cloud]').forEach(b => b.addEventListener('click', () => {
     subcoSelectedCloud = subcoSelectedCloud === b.dataset.cloud ? null : b.dataset.cloud;
@@ -1310,12 +1311,86 @@ function renderSubcoChart(filtered, clouds, byCloudMonth, totalDays) {
       scales:{
         x:{stacked:true,grid:{color:gridC},ticks:{color:tickC,font:{size:10}}},
         y:{stacked:true,grid:{color:gridC},ticks:{color:tickC,font:{size:10}},beginAtZero:true}
+      },
+      onClick(event, elements) {
+        if (!elements.length) return;
+        const monthIdx = elements[0].index;  // 0=Feb 2026 … 11=Jan 2027
+        renderSubcoMonthDetail(filtered, monthIdx);
       }
     }
   });
   if (legendEl) legendEl.innerHTML = legendItems.map(({label,color})=>
     `<div class="legend-item"><div class="legend-dot" style="background:${color}"></div>${label}</div>`
   ).join('');
+}
+
+function renderSubcoMonthDetail(filtered, monthIdx) {
+  const el = document.getElementById('subco-month-detail');
+  if (!el) return;
+
+  // Toggle off if same month clicked again
+  if (el.dataset.month === String(monthIdx)) {
+    el.innerHTML = '';
+    el.dataset.month = '';
+    return;
+  }
+  el.dataset.month = String(monthIdx);
+
+  const month = SUBCO_MONTHS[monthIdx];
+  const rows = filtered.filter(r => r[1] === monthIdx);
+  const cloudLabel = subcoSelectedCloud ? ` · ${subcoSelectedCloud}` : '';
+
+  // Group by company → courses
+  const byCompany = {};
+  for (const r of rows) {
+    const co = SUBCO_COMPANIES[r[0]];
+    const course = r[2];
+    const days = r[5];
+    if (!byCompany[co]) byCompany[co] = {days: 0, courses: {}};
+    byCompany[co].days += days;
+    byCompany[co].courses[course] = (byCompany[co].courses[course] || 0) + days;
+  }
+
+  const sorted = Object.entries(byCompany).sort((a, b) => b[1].days - a[1].days);
+  const totalDays = sorted.reduce((s, [, v]) => s + v.days, 0);
+
+  el.innerHTML = `
+    <div class="card" style="border-left:3px solid var(--c-P)">
+      <h3>${month}${cloudLabel} — Subcontractors booked
+        <button id="subco-month-close" style="font-size:11px;font-weight:400;background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;cursor:pointer;color:var(--text2);margin-left:8px">✕ Close</button>
+      </h3>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">${sorted.length} companies · ${Math.round(totalDays)} days</div>
+      <table>
+        <thead><tr>
+          <th>Company</th>
+          <th class="num">Days</th>
+          <th>Courses delivered</th>
+        </tr></thead>
+        <tbody>
+          ${sorted.map(([co, v]) => {
+            const courseList = Object.entries(v.courses)
+              .sort((a, b) => b[1] - a[1])
+              .map(([c, d]) => `${c} (${Math.round(d)}d)`)
+              .join(', ');
+            return `<tr>
+              <td class="total-bold">${co}</td>
+              <td class="num">${Math.round(v.days)}</td>
+              <td style="font-size:11px;color:var(--text2)">${courseList}</td>
+            </tr>`;
+          }).join('')}
+          <tr style="font-weight:700;border-top:2px solid var(--border)">
+            <td>TOTAL</td>
+            <td class="num">${Math.round(totalDays)}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+
+  document.getElementById('subco-month-close').addEventListener('click', () => {
+    el.innerHTML = '';
+    el.dataset.month = '';
+  });
 }
 
 function renderSubcoDrilldown(filtered) {

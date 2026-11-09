@@ -147,6 +147,7 @@ tr:hover td{background:var(--bg)}
       <button class="tab-btn" data-tab="manager">By Manager</button>
       <button class="tab-btn" data-tab="instructor">By Instructor</button>
       <button class="tab-btn" data-tab="cloud">By Cloud</button>
+      <button class="tab-btn" data-tab="subco">By Subco</button>
     </div>
     <div id="tab-content"></div>
   </div>
@@ -1040,11 +1041,142 @@ function renderCloud() {
   rebind();
 }
 
+// ── Subcontractor data (course × region; FY27 Feb–Jan) ──────────────────────
+// Columns: [course, region, days, duration_hours, bookings_count]
+const SUBCO_DATA = [["ADX201","AMER",690,230,391.0],["ADX201-1","JP",590,189,534.5],["ADX201-2","JP",503,124,526.0],["SDC101","AMER",731,123,348.5],["DEX450","AMER",255,95,157.0],["MKT101","EMEA",232,85,144.5],["ARC730","AMER",189,80,128],["DEX450","APAC",249,80,136.0],["TTD101","AMER",685,74,314.5],["MKT101","AMER",207,70,118.5],["ADX201","APAC",229,70,117.0],["TTD101","JP",454,70,297.5],["DEX602","APAC",175,65,110.5],["ADX201","EMEA",201,65,110.0],["IND330","AMER",186,64,136.0],["TTD201","JP",328,64,271.5],["ARC101","AMER",333,63,128],["DEX602","AMER",143,60,102.0],["TTD201","AMER",427,56,238.0],["TTD301","AMER",390,56,238.0],["TTD101","APAC",332,56,230.5],["ARC730","APAC",154,55,88.5],["ADX201","JP",10,55,88],["ADX301","AMER",238,54,153.0],["CRT101","AMER",992,52,442.0],["TTD301","APAC",262,52,212.0],["OMS435","AMER",124,50,84.5],["TTD201","APAC",327,50,208.0],["DEX401","AMER",138,45,72],["DEX401","EMEA",141,45,72],["MKT101","JP",24,45,72],["ARC101","APAC",239,42,81.5],["ADX301","JP",122,42,113.5],["ADX211","APAC",153,40,84.0],["MKT101","APAC",135,40,68.0],["ADX211","JP",73,40,85.0],["ADX361","AMER",179,39,110.5],["MKT201","AMER",169,39,110.5],["ARC101","EMEA",170,39,78],["SDC101","EMEA",225,36,102.0],["OMS435","APAC",87,35,59.5],["DEX450","EMEA",79,35,59.5],["TTD301","JP",104,35,137.0],["TTD301","EMEA",195,34,144.5],["TTP101","JP",172,34,144.5],["BSX101","AMER",169,33,86.0],["ADX211","AMER",102,32,68.0],["ADX211","EMEA",82,32,68.0],["TVA101","JP",108,32,136.0],["ADX350","AMER",76,31,56],["ANC301","AMER",133,30,85.0],["FSL201","AMER",104,30,85.0],["SDC301","AMER",155,30,81.5],["BSX101","APAC",92,30,79.5],["SDC101","APAC",179,30,84.5],["DEX602","EMEA",74,30,51.0],["-","JP",0,30,9],["DEX450-1","JP",76,30,85.0],["CRT101","APAC",545,29,242.5],["MKT201","EMEA",110,27,76.5],["TVA101","APAC",120,26,110.5],["TTD101","EMEA",180,26,110.0],["TTP101","EMEA",113,26,110.5],["CPQ301","AMER",61,25,42.5],["ADX201-INT","JP",112,25,42.5],["TTP101","AMER",166,24,102.0],["FSL201","APAC",107,24,67.5],["MKT201","APAC",95,24,68.0],["SDC301","APAC",95,24,68.0],["ADX361","JP",31,24,68.0],["TTP101","APAC",126,22,93.5],["ANC301","APAC",88,21,59.5],["TSA201","EMEA",60,21,59.5],["SDC301","EMEA",95,21,59.5],["PDX101","JP",67,21,56],["CPQ301","APAC",66,20,34.0],["DEX401","APAC",63,20,32],["ARC730","EMEA",49,20,32],["TVA101","EMEA",83,20,85.0],["ADX201","LATAM",51,20,20.5],["OMS335","AMER",87,18,51.0],["OMS335","APAC",96,18,51.0],["DEX401-2","JP",61,18,48],["DEX450-2","JP",70,18,76.5],["SDC101","LATAM",96,18,51.0],["TTD201","EMEA",101,16,68.0],["ADX261","JP",6,16,68.0],["CTA601","AMER",69,15,15],["CCM101","AMER",34,15,12],["ARC720","APAC",61,15,40],["PDX101","APAC",45,15,41.5],["CCM101","APAC",24,15,12],["MKT101","LATAM",60,15,25.5],["TVA101","AMER",87,14,59.5],["TSA101","AMER",65,12,51.0],["TSA201","AMER",34,12,34.0],["ADX301","EMEA",47,12,34.0],["CCD102","EMEA",14,12,24.5],["DEX401-1","JP",68,12,48],["TAB101","APAC",135,11,84.5],["CCM101","EMEA",31,10,12],["TSA101","EMEA",51,10,42.5],["OMS435","EMEA",14,10,17.0],["CTA601","APAC",28,9,9],["CTA601","EMEA",26,9,9],["ANC201","AMER",103,8,68.0],["ANC201","APAC",121,8,68.0],["OPS335","APAC",45,8,32],["AFS201J","JP",5,8,32],["ARC720","AMER",34,6,16],["MAX150","AMER",42,6,24],["PDX101","AMER",32,6,17.0],["OPS350","AMER",28,6,16],["DEX475","APAC",48,6,24],["DEX660","APAC",31,6,16],["BSX101","EMEA",21,6,17.0],["MAX150","EMEA",28,6,24],["ARC720","EMEA",22,6,16],["PDX101","EMEA",22,6,17.0],["PDX102","JP",15,6,25.5],["DEX602-1","JP",4,6,17.0],["Bootcamp Admin","AMER",0,5,8.5],["ADX350","EMEA",6,5,8],["CPQ301","EMEA",10,5,8.5],["DEX450","JP",0,5,8],["DEX602","JP",0,5,8],["CCM101","LATAM",4,5,4],["ADX261","AMER",35,4,17.0],["MAX155","AMER",55,4,16],["ADX261","APAC",36,4,17],["OPS325","APAC",30,4,16],["CCD102","APAC",0,4,8.5],["TTD150","JP",0,4,9],["DEX602-2","JP",5,4,17.0],["ADX211","LATAM",3,4,8.5],["ARC201","AMER",0,3,8.5],["Bootcamp Data Architect","AMER",47,3,8.5],["OPS350","APAC",2,3,8],["CRT101","EMEA",59,3,25.5],["ANC301","EMEA",6,3,8.5],["DEX660","EMEA",14,3,8],["AFS101J","JP",7,3,1.5],["SDC101","JP",1,3,8],["CRT101","JP",2,3,24],["CTA601","JP",8,3,3],["AGT404J-2","JP",0,3,2],["ANC301","JP",5,3,8.5],["BSX101","JP",0,3,8],["MKT201","JP",0,3,8],["DEX480","AMER",15,2,8],["VIWs","AMER",0,2,0.5],["OPS325","EMEA",11,2,8],["DEX480","EMEA",9,2,8],["ANC201","JP",33,2,17.0],["CRT101J","JP",17,2,16],["AFS001J","JP",1,2,2],["SSC005","APAC",0,1.5,1.5],["AGT402J","JP",0,1.5,2],["UAT102","AMER",2,1,0.5],["AGT590","AMER",0,1,6],["ADX251","JP",14,1,8.5],["ADX271","JP",18,1,8],["CRT101","LATAM",20,1,4]];
+
+let subcoRegionFilter = 'ALL';
+let subcoSortKey = 'duration';
+let subcoSortAsc = false;
+let subcoSearchQ = '';
+
+function renderSubco() {
+  const el = document.getElementById('tab-content');
+
+  // Filter and aggregate
+  const filtered = subcoRegionFilter === 'ALL'
+    ? SUBCO_DATA
+    : SUBCO_DATA.filter(r => r[1] === subcoRegionFilter);
+
+  // Aggregate by course
+  const byCourse = {};
+  for (const [course, region, days, dur, cnt] of filtered) {
+    if (!byCourse[course]) byCourse[course] = {course, cloud: getCloud(course), days:0, duration:0, count:0, regions: new Set()};
+    byCourse[course].days += days;
+    byCourse[course].duration += dur;
+    byCourse[course].count += cnt;
+    byCourse[course].regions.add(region);
+  }
+  let rows = Object.values(byCourse);
+  if (subcoSearchQ) {
+    const q = subcoSearchQ.toLowerCase();
+    rows = rows.filter(r => r.course.toLowerCase().includes(q) || r.cloud.toLowerCase().includes(q));
+  }
+  rows.sort((a,b) => {
+    const av = a[subcoSortKey], bv = b[subcoSortKey];
+    if (typeof av === 'string') return subcoSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return subcoSortAsc ? av - bv : bv - av;
+  });
+
+  const totalDur = rows.reduce((s,r) => s+r.duration, 0);
+  const totalDays = rows.reduce((s,r) => s+r.days, 0);
+  const totalCount = rows.reduce((s,r) => s+r.count, 0);
+
+  // Cloud breakdown
+  const byCloud = {};
+  for (const r of rows) {
+    if (!byCloud[r.cloud]) byCloud[r.cloud] = 0;
+    byCloud[r.cloud] += r.duration;
+  }
+  const cloudEntries = Object.entries(byCloud).sort((a,b) => b[1]-a[1]);
+
+  const regions = ['ALL','AMER','APAC','EMEA','JP','LATAM'];
+  const th = (key, label) => {
+    const icon = subcoSortKey===key ? (subcoSortAsc ? ' ▲':' ▼') : '';
+    return `<th class="${subcoSortKey===key?'sorted':''}" data-key="${key}">${label}${icon}</th>`;
+  };
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div class="kpi"><div class="kpi-label">Duration Hours</div><div class="kpi-val">${Math.round(totalDur).toLocaleString()}</div><div class="kpi-sub">subcontractor bookings</div></div>
+      <div class="kpi"><div class="kpi-label">Course Days</div><div class="kpi-val">${Math.round(totalDays).toLocaleString()}</div><div class="kpi-sub">instructor days booked</div></div>
+      <div class="kpi"><div class="kpi-label">Bookings</div><div class="kpi-val">${Math.round(totalCount).toLocaleString()}</div><div class="kpi-sub">delivery sessions</div></div>
+      <div class="kpi"><div class="kpi-label">Courses</div><div class="kpi-val">${rows.length}</div><div class="kpi-sub">unique course codes</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h3>Hours by Cloud — Subcontractors</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+        ${cloudEntries.map(([cloud, hrs]) => {
+          const pct = totalDur > 0 ? hrs/totalDur*100 : 0;
+          const color = CLOUD_COLORS[cloud] || '#aaa';
+          return `<div style="text-align:center;min-width:70px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${cloud}</div>
+            <div style="height:${Math.max(4,Math.round(pct*1.2))}px;background:${color};border-radius:3px 3px 0 0;width:60px;margin:0 auto"></div>
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-top:3px">${Math.round(hrs)}h</div>
+            <div style="font-size:10px;color:var(--text3)">${pct.toFixed(1)}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="tbl-controls">
+      <input class="search-box" id="subco-search" placeholder="Search course or cloud…" value="${subcoSearchQ}">
+      <select class="filter-sel" id="subco-region">
+        ${regions.map(r => `<option value="${r}" ${r===subcoRegionFilter?'selected':''}>${r==='ALL'?'All Regions':r}</option>`).join('')}
+      </select>
+      <span style="font-size:12px;color:var(--text3);margin-left:4px">${rows.length} courses &middot; ${Math.round(totalDur).toLocaleString()} hrs &middot; ${Math.round(totalDays).toLocaleString()} days &middot; ${Math.round(totalCount).toLocaleString()} bookings</span>
+    </div>
+    <table>
+      <thead><tr>
+        ${th('course','Course')}
+        ${th('cloud','Cloud')}
+        ${th('duration','Duration Hrs')}
+        ${th('days','Days')}
+        ${th('count','Bookings')}
+        <th>Regions</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `<tr>
+          <td class="total-bold">${r.course}</td>
+          <td><span class="dot" style="background:${CLOUD_COLORS[r.cloud]||'#aaa'}"></span> ${r.cloud}</td>
+          <td class="num">${r.duration.toLocaleString()}</td>
+          <td class="num">${Math.round(r.days).toLocaleString()}</td>
+          <td class="num">${Math.round(r.count).toLocaleString()}</td>
+          <td style="font-size:11px;color:var(--text3)">${[...r.regions].sort().join(', ')}</td>
+        </tr>`).join('')}
+        <tr style="font-weight:700;border-top:2px solid var(--border)">
+          <td>TOTAL</td><td></td>
+          <td class="num">${totalDur.toLocaleString()}</td>
+          <td class="num">${Math.round(totalDays).toLocaleString()}</td>
+          <td class="num">${Math.round(totalCount).toLocaleString()}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+
+  document.getElementById('subco-search').addEventListener('input', e => {
+    subcoSearchQ = e.target.value;
+    renderSubco();
+  });
+  document.getElementById('subco-region').addEventListener('change', e => {
+    subcoRegionFilter = e.target.value;
+    renderSubco();
+  });
+  el.querySelectorAll('th[data-key]').forEach(th => {
+    th.addEventListener('click', () => {
+      if (subcoSortKey === th.dataset.key) subcoSortAsc = !subcoSortAsc;
+      else { subcoSortKey = th.dataset.key; subcoSortAsc = false; }
+      renderSubco();
+    });
+  });
+}
+
 // ── Tab router ──────────────────────────────────────────────────────────────
 function renderTab(months, byInst) {
   if (tab==='region') renderRegion(months,byInst);
   else if (tab==='manager') renderManager(months,byInst);
   else if (tab==='cloud') renderCloud();
+  else if (tab==='subco') renderSubco();
   else renderInstructor(months,byInst);
 }
 

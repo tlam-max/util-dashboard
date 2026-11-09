@@ -199,7 +199,7 @@ const CLOUD_PREFIX_MAP = {
   BRE:'Platform', SFS:'Platform', CRT:'Platform', INS:'Platform',
   ASC:'Platform', SSC:'Platform',
   // Revenue Cloud
-  REV:'Revenue Cloud',
+  REV:'Revenue Cloud', CPQ:'Revenue Cloud',
   // Marketing Cloud
   MKT:'Marketing Cloud', MOC:'Marketing Cloud',
   // Commerce Cloud
@@ -208,6 +208,8 @@ const CLOUD_PREFIX_MAP = {
   IND:'Industries', DGN:'Industries', DSF:'Industries', LSC:'Industries',
   // Slack
   SLK:'Slack',
+  // Tableau (additional — ANC = Admin certification aligned to ADX family)
+  ANC:'Tableau',
 };
 const CLOUD_COLORS = {
   'Agentforce':'#066afe','Data 360':'#2f2cb7','Tableau':'#e8762c',
@@ -218,9 +220,12 @@ const CLOUD_COLORS = {
 const CLOUD_ORDER = ['Agentforce','Data 360','Tableau','MuleSoft','Platform','Revenue Cloud','Marketing Cloud','Commerce Cloud','Industries','Slack','Other'];
 
 function getCourseCode(name) {
-  // Match code between dashes/spaces, inside parentheses, or at end of string
+  // Match code embedded in a longer name (after dash/space/paren)
   const m = name.match(/[-\s(–—]([A-Z]{2,4}\d{3,4}[A-Z]?)(?:[-\s)–—]|$)/);
-  return m ? m[1] : null;
+  if (m) return m[1];
+  // Match name that IS the code (e.g. "TTD101", "ADX201-1", "CRT101J")
+  const m2 = name.match(/^([A-Z]{2,4}\d{3,4}[A-Z]?)(?:[-J].*)?$/);
+  return m2 ? m2[1] : null;
 }
 function getCloud(campName) {
   // Leave HOT records and bootcamp events as Other

@@ -1991,13 +1991,83 @@ function openModal(inst) {
   const body = document.getElementById('modal-body');
   const paceSign = paceDelta>=0?'+':'';
   const ytdPct = expectedByNow>0 ? totYtd/expectedByNow*100 : 0;
+
+  // ── Month to Plan ─────────────────────────────────────────────────────────
+  // Window: all FY months up to and including current, plus 4 months ahead (may extend beyond FY)
+  const M2P_MONTHLY_TARGET = 100; // 1,200 hrs/yr ÷ 12
+  const m2pWindow = [];
+  const currYmIdx = fyMonths.indexOf(currYm);
+  // All FY months up to current month
+  for (let i = 0; i <= Math.max(currYmIdx, 0) && i < fyMonths.length; i++) {
+    m2pWindow.push({ ym: fyMonths[i], label: D.month_labels[i], inFY: true });
+  }
+  // 4 months ahead (may go beyond the FY array — generate YYYY-MM strings)
+  const lastFyYm = fyMonths[fyMonths.length - 1];
+  for (let ahead = 1; ahead <= 4; ahead++) {
+    const base = currYmIdx >= 0 ? currYm : lastFyYm;
+    const [yr, mo] = base.split('-').map(Number);
+    const d2 = new Date(yr, mo - 1 + ahead, 1);
+    const ym2 = d2.getFullYear() + '-' + String(d2.getMonth() + 1).padStart(2, '0');
+    const fyIdx = fyMonths.indexOf(ym2);
+    const lbl = fyIdx >= 0 ? D.month_labels[fyIdx] : (d2.toLocaleString('default', {month:'short'}) + ' ' + String(d2.getFullYear()).slice(2));
+    m2pWindow.push({ ym: ym2, label: lbl, inFY: fyIdx >= 0 });
+  }
+  // Build month-to-plan HTML using string concatenation
+  let m2pHtml = '';
+  let m2pTotalHrs = 0, m2pTotalTarget = 0, m2pMonthCount = 0;
+  m2pWindow.forEach(({ ym: wym, label: wlbl }) => {
+    // Hours for this month: sum from monthData if in FY, else look up records directly
+    let hrs = 0;
+    const fyIdx2 = fyMonths.indexOf(wym);
+    if (fyIdx2 >= 0) {
+      hrs = total(monthData[wym]);
+    } else {
+      // Beyond FY — pull from D.records
+      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym) hrs += r.h; });
+    }
+    const mTarget = monthlyTarget(inst, wym) || M2P_MONTHLY_TARGET;
+    const isPast = wym < currYm;
+    const isCurr = wym === currYm;
+    const statusLbl = isPast ? 'Completed' : (isCurr ? 'Current' : 'Planned');
+    const statusColor = isPast ? 'var(--on)' : (isCurr ? '#0070d2' : '#898781');
+    const barPct = mTarget > 0 ? Math.min(hrs / mTarget * 100, 100) : 0;
+    const barColor = isPast ? (hrs >= mTarget * 0.9 ? 'var(--on)' : hrs >= mTarget * 0.7 ? 'var(--risk)' : 'var(--behind)') : '#0070d2';
+    m2pTotalHrs += hrs;
+    m2pTotalTarget += mTarget;
+    m2pMonthCount++;
+
+    m2pHtml += '<div style="display:grid;grid-template-columns:80px 1fr 60px 70px;gap:8px;align-items:center;margin-bottom:8px">';
+    m2pHtml += '<div style="font-size:12px;font-weight:600;color:var(--text2)">' + wlbl + '</div>';
+    m2pHtml += '<div style="background:var(--border);border-radius:3px;height:8px;overflow:hidden">';
+    m2pHtml += '<div style="height:100%;width:' + barPct.toFixed(1) + '%;background:' + barColor + ';border-radius:3px;transition:width 0.3s"></div></div>';
+    m2pHtml += '<div style="font-size:12px;text-align:right;font-weight:600;color:' + barColor + '">' + fmt(hrs) + ' hrs</div>';
+    m2pHtml += '<div style="font-size:11px;text-align:right;color:' + statusColor + ';font-weight:600">' + statusLbl + '</div>';
+    m2pHtml += '</div>';
+  });
+  const m2pAvgPct = m2pTotalTarget > 0 ? m2pTotalHrs / m2pTotalTarget * 100 : 0;
+  const m2pAvgColor = m2pAvgPct >= 90 ? 'var(--on)' : m2pAvgPct >= 70 ? 'var(--risk)' : 'var(--behind)';
+  const m2pMonthTarget = m2pWindow.length > 0 ? (monthlyTarget(inst, m2pWindow[0].ym) || M2P_MONTHLY_TARGET) : M2P_MONTHLY_TARGET;
+
+  let m2pSectionHtml = '';
+  m2pSectionHtml += '<div style="margin-bottom:8px;margin-top:20px;display:flex;align-items:baseline;gap:10px">';
+  m2pSectionHtml += '<span style="font-size:13px;font-weight:600;color:var(--text2)">Month to Plan</span>';
+  m2pSectionHtml += '<span style="font-size:11px;color:var(--text3)">FY start → current month + 4 ahead · target ' + fmt(m2pMonthTarget) + ' hrs/mo</span>';
+  m2pSectionHtml += '</div>';
+  m2pSectionHtml += '<div style="background:var(--surface2,var(--surface));border:1px solid var(--border);border-radius:8px;padding:14px 16px">';
+  m2pSectionHtml += m2pHtml;
+  m2pSectionHtml += '<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">';
+  m2pSectionHtml += '<div style="font-size:12px;color:var(--text3)">' + m2pMonthCount + ' months · ' + fmt(m2pTotalHrs) + ' / ' + fmt(m2pTotalTarget) + ' hrs total</div>';
+  m2pSectionHtml += '<div style="font-size:14px;font-weight:700;color:' + m2pAvgColor + '">' + fmtPct(m2pAvgPct) + ' avg of target</div>';
+  m2pSectionHtml += '</div></div>';
+
   body.innerHTML = `
     <div class="modal-kpis">
       <div class="modal-kpi"><div class="lbl">Pace vs Target (YTD)</div><div class="val" style="color:${paceColor}">${paceSign}${fmt(paceDelta)} hrs <span style="font-size:14px;font-weight:500">(${fmtPct(ytdPct)})</span></div><div class="sub">${fmt(expectedByNow)} hrs expected through ${D.month_labels[fyMonths.indexOf(elapsedMs[elapsedMs.length-1])]||currYm}</div></div>
       <div class="modal-kpi"><div class="lbl">Total Completed and Planned Hours / FY27 Target</div><div class="val" style="color:${sColor}">${fmt(tot)} <span style="font-size:14px;font-weight:500;color:var(--text2)">/ ${fmt(fyTarget)}</span></div><div class="sub">${fmtPct(pct)} of target · ${fmt(Math.max(0,fyTarget-tot))} remaining</div></div>
       ${kpiTile('Teaching + Prep', fmt(teach), fmt(trav)+' hrs travel', '')}
     </div>
-    <div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Monthly Breakdown — FY27</div>
+    ${m2pSectionHtml}
+    <div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2);margin-top:20px">Monthly Breakdown — FY27</div>
     <div style="position:relative;height:240px"><canvas id="modal-chart"></canvas></div>
     <div class="legend-row" id="modal-legend" style="margin-top:10px;margin-bottom:4px"></div>
     <div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Cumulative Hours vs Target — FY27</div>

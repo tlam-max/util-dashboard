@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APAC Data Issue — Dashboard Action Guide</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; color: #1a1a2e; background: #f8f9fc; line-height: 1.6; }
+  .page { max-width: 780px; margin: 40px auto; padding: 0 24px 80px; }
+
+  header { margin-bottom: 32px; border-bottom: 3px solid #0070d2; padding-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 700; color: #0070d2; margin-bottom: 4px; }
+  header p { color: #666; font-size: 13px; }
+
+  .callout { padding: 13px 16px; border-radius: 0 6px 6px 0; margin-bottom: 20px; font-size: 14px; }
+  .callout.red { background: #fdf0f2; border-left: 4px solid #c8223e; }
+  .callout.amber { background: #fff8e1; border-left: 4px solid #f4b942; }
+  .callout.blue { background: #e8f4fd; border-left: 4px solid #0070d2; }
+  .callout.green { background: #e6f4ea; border-left: 4px solid #1a7a4a; }
+  .callout strong { display: block; margin-bottom: 4px; font-weight: 700; }
+
+  h2 { font-size: 16px; font-weight: 700; color: #0070d2; margin: 32px 0 10px; display: flex; align-items: center; gap: 10px; }
+  h2 .num { background: #0070d2; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+  .card { background: #fff; border: 1px solid #dde3ed; border-radius: 8px; padding: 18px 20px; margin-bottom: 12px; }
+  .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+
+  .ask-list { list-style: none; padding: 0; }
+  .ask-list li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid #f0f2f7; font-size: 14px; }
+  .ask-list li:last-child { border-bottom: none; }
+  .ask-list li .num-sm { background: #0070d2; color: #fff; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .ask-list li .body { flex: 1; }
+  .ask-list li .ask { font-weight: 600; }
+  .ask-list li .why { font-size: 12px; color: #888; margin-top: 3px; }
+
+  .flow { display: flex; align-items: flex-start; gap: 0; margin: 16px 0; flex-wrap: wrap; }
+  .flow-step { background: #f0f4fb; border: 1px solid #c5d5ed; border-radius: 6px; padding: 10px 14px; font-size: 13px; flex: 1; min-width: 140px; }
+  .flow-step .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; font-weight: 600; margin-bottom: 3px; }
+  .flow-step .val { font-weight: 600; color: #1a1a2e; }
+  .flow-arrow { display: flex; align-items: center; padding: 0 8px; color: #aaa; font-size: 18px; align-self: center; }
+  .flow-step.broken { background: #fdf0f2; border-color: #e8a0aa; }
+  .flow-step.broken .val { color: #c8223e; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f0f4fb; text-align: left; padding: 8px 12px; font-weight: 600; color: #444; border-bottom: 2px solid #dde3ed; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eef1f6; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge.green { background: #e6f4ea; color: #1a7a4a; }
+  .badge.amber { background: #fff3cd; color: #8a6200; }
+  .badge.blue { background: #e8f4fd; color: #005fb2; }
+  code { background: #eef1f6; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; color: #333; }
+
+  hr { border: none; border-top: 1px solid #eef1f6; margin: 28px 0; }
+  footer { text-align: center; font-size: 12px; color: #bbb; margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>APAC Data Issue — Dashboard Action Guide</h1>
+    <p>Training &amp; Certification · FY27 · For APAC delivery leaders and Salesforce admin</p>
+  </header>
+
+  <div class="callout red">
+    <strong>Why APAC instructors are missing from the dashboard</strong>
+    This is not a data entry problem — it is a structural ownership issue in Salesforce. APAC (and LATAM) campaigns are created and owned by the <strong>TandC Integrations</strong> system account, not the individual instructor. The utilization report can only find campaigns through Campaign Owner, so no APAC campaigns surface regardless of what instructor names are in the report filters.
+  </div>
+
+  <!-- Root cause -->
+  <h2><span class="num">1</span> What's happening</h2>
+  <div class="card">
+    <p style="margin-bottom:12px">The report type joins three objects to get from instructor → campaign. For AMER/EMEA this works. For APAC it breaks at the last step.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="lbl">Expected path</div>
+        <div class="val">User → Contact → Campaign</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="lbl">Join field</div>
+        <div class="val">Campaign Owner = Instructor's User</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green" style="background:#e6f4ea;border-color:#a8d5b5">
+        <div class="lbl">AMER / EMEA</div>
+        <div class="val" style="color:#1a7a4a">✓ Works</div>
+      </div>
+    </div>
+    <div class="flow" style="margin-top:8px">
+      <div class="flow-step">
+        <div class="lbl">APAC actual path</div>
+        <div class="val">User → Contact → Campaign</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step broken">
+        <div class="lbl">Campaign Owner</div>
+        <div class="val">TandC Integrations (system)</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step broken">
+        <div class="lbl">Result</div>
+        <div class="val">0 campaigns found</div>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:13px;color:#666">The instructor <em>is</em> recorded on each campaign — in a custom field called <code>Campaign.Instructor__c</code> — but the report type does not read from that field. It only reads Campaign Owner.</p>
+  </div>
+
+  <!-- Current workaround -->
+  <div class="callout amber">
+    <strong>Current workaround</strong>
+    APAC utilization data is loaded from the <strong>Google Sheet (FY27 Event Util Days Matrix)</strong> as monthly aggregates. This is why APAC instructors appear in the main utilization views but are missing from per-campaign drill-downs and the By Cloud breakdown. <strong>If the Google Sheet is not being maintained, those instructors show zero in the dashboard.</strong>
+  </div>
+
+  <!-- What to ask APAC leaders -->
+  <h2><span class="num">2</span> What to ask APAC leaders</h2>
+  <p style="margin-bottom:12px;font-size:14px">Share these four asks with Affa Khatoon, Mohina Sheikh, and their counterparts covering India-based instructors. The goal is to ensure data is accurate now and ready for a structural fix later.</p>
+
+  <div class="card" style="padding:0 20px">
+    <ul class="ask-list">
+      <li>
+        <span class="num-sm">1</span>
+        <div class="body">
+          <div class="ask">Is the <code>Instructor__c</code> field populated on every campaign your team delivers?</div>
+          <div class="why">Spot-check 5–10 recent campaigns in Salesforce. Open the Campaign record and confirm the Instructor field has the correct name. This is the data that will feed any future structural fix — if it's blank now, fixing the report type still won't capture the hours.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num-sm">2</span>
+        <div class="body">
+          <div class="ask">Is the FY27 Event Util Days Matrix Google Sheet being updated monthly for every instructor on your team?</div>
+          <div class="why">This is the only source feeding APAC data into the dashboard right now. Every instructor — including all India-based instructors on Affa's and Mohina's teams — must have their delivery days entered. A blank month = zero hours in the dashboard.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num-sm">3</span>
+        <div class="body">
+          <div class="ask">Do all your instructors have an active, complete Contact record in Salesforce?</div>
+          <div class="why">Each instructor needs all four flags set on their Contact record: <code>Instructor Status = Certified Instructor</code>, <code>Instructor Type = Salesforce Employee</code>, <code>Account = salesforce.com</code>, <code>Active Contact = true</code>. Missing any one of these will exclude them from the dashboard — even after the structural fix is in place.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num-sm">4</span>
+        <div class="body">
+          <div class="ask">Are campaign Start Time, End Time, and Address fields being populated when campaigns are created?</div>
+          <div class="why">These fields drive the hours calculation: Start/End Time → daily hours; Address → travel hours (16 hrs if onsite, 0 if virtual). If they're blank now, fixing the report type will surface the campaigns but show 0 hours. It's worth getting into good habits now so the data is clean when the fix lands.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Fix options -->
+  <h2><span class="num">3</span> Fix options</h2>
+  <p style="margin-bottom:12px;font-size:14px">Three paths to resolve the structural issue permanently. Option A is recommended.</p>
+  <div class="card" style="padding:0">
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>What it involves</th>
+          <th>Effort</th>
+          <th>Risk</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>A — New custom report type</strong> <span class="badge green">Recommended</span></td>
+          <td>Create a report type in Salesforce Setup that joins Campaign → Contact via <code>Instructor__c</code>, then Contact → User. All APAC/LATAM campaigns will then be findable by instructor name. No changes to any automation.</td>
+          <td>Medium — Salesforce admin needed</td>
+          <td>Low</td>
+        </tr>
+        <tr>
+          <td><strong>B — Change Campaign Owner</strong></td>
+          <td>Update the TandC Integrations automation to set Campaign Owner = the instructor's User record instead of (or alongside) the <code>Instructor__c</code> field. Makes the existing report type work without changes.</td>
+          <td>Medium–High</td>
+          <td>Medium — may affect other automation that depends on TandC Integrations as owner</td>
+        </tr>
+        <tr>
+          <td><strong>C — Keep Google Sheet</strong> <span class="badge amber">Current</span></td>
+          <td>Continue using the FY27 Event Util Days Matrix as the APAC/LATAM data source. Works but limited — no per-campaign detail, no cloud breakdown, dependent on manual updates.</td>
+          <td>Low — already in place</td>
+          <td>Low (data risk if Sheet not maintained)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+  <footer>Training &amp; Certification · APAC Data Issue · FY27</footer>
+
+</div>
+</body>
+</html>

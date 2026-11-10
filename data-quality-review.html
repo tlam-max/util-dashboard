@@ -38,8 +38,24 @@
   .escalate td { padding: 8px 12px; border-bottom: 1px solid #f0f2f7; vertical-align: top; }
   .escalate tr:last-child td { border-bottom: none; }
 
+  .approach { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .approach-card { background: #fff; border: 1px solid #dde3ed; border-radius: 8px; padding: 16px 18px; }
+  .approach-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .approach-card.full h3 { color: #0070d2; }
+  .approach-card.spot h3 { color: #1a7a4a; }
+  .approach-card p { font-size: 13px; color: #555; margin: 0; }
+  .approach-card .tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+  .approach-card.full .tag { background: #e8f4fd; color: #005fb2; }
+  .approach-card.spot .tag { background: #e6f4ea; color: #1a7a4a; }
+  .sf-step { background: #f4f7fb; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-top: 8px; }
+  .sf-step strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #888; margin-bottom: 4px; }
+  .sf-step ol { padding-left: 16px; }
+  .sf-step ol li { margin-bottom: 3px; color: #444; }
+  code { background: #eef1f6; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; color: #333; }
+
   hr { border: none; border-top: 1px solid #eef1f6; margin: 24px 0; }
   footer { text-align: center; font-size: 12px; color: #bbb; margin-top: 32px; }
+  @media (max-width: 560px) { .approach { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -51,7 +67,20 @@
   </header>
 
   <div class="intro">
-    <strong>How to use this:</strong> Open <strong>https://tlam-max.github.io/util-dashboard/</strong>, filter to your team on the By Instructor tab, and work through each section. Tick each item as you go. Flag anything that doesn't look right using the escalation table at the bottom.
+    Open <strong>https://tlam-max.github.io/util-dashboard/</strong> and the T&amp;C Salesforce org side by side. Work through each section and tick items as you go. Flag anything that doesn't look right using the escalation table at the bottom.
+  </div>
+
+  <div class="approach">
+    <div class="approach-card full">
+      <span class="tag">Full team review</span>
+      <h3>Review every instructor</h3>
+      <p>Go through each name on the By Instructor tab one by one. Takes ~5 min per instructor. Recommended if this is the first review or you haven't checked in a while.</p>
+    </div>
+    <div class="approach-card spot">
+      <span class="tag">Spot check</span>
+      <h3>Sample 2–3 instructors</h3>
+      <p>Pick one high-volume instructor, one low-volume instructor, and one new hire. Verify their numbers in depth. Good for a quick confidence check each month.</p>
+    </div>
   </div>
 
   <!-- 1 -->
@@ -63,8 +92,8 @@
         <div class="hint">Quick estimate: headcount × months active × 100 hrs. A ±30% gap is worth investigating.</div>
       </div></li>
       <li><input type="checkbox"><div>
-        <div class="main">Click your team bar → confirm the headcount in the modal matches your actual active roster.</div>
-        <div class="hint">Missing instructor = their Contact record likely lacks "Certified Instructor + Salesforce Employee + Active" flags.</div>
+        <div class="main">Click your team bar → does the headcount in the modal match your actual active roster?</div>
+        <div class="hint">Missing instructor = their Contact record likely lacks "Certified Instructor + Salesforce Employee + Active Contact" flags in Salesforce.</div>
       </div></li>
     </ul>
   </div>
@@ -74,24 +103,38 @@
     <div class="section-header"><span class="num">2</span><h2>Per-instructor review</h2></div>
     <ul class="checks">
       <li><input type="checkbox"><div>
-        <div class="main">Click each instructor name → does their monthly chart look reasonable with no unexplained spikes or zero months?</div>
-        <div class="hint">A zero month for an active instructor usually means blank Start/End Time on a campaign, or campaigns weren't assigned to them.</div>
+        <div class="main">Click each instructor name (or your 2–3 spot-check picks) → does the monthly chart look reasonable? No unexplained spikes or zero months?</div>
+        <div class="hint">A zero month for an active instructor usually means blank Start/End Time on a campaign in Salesforce, or campaigns not assigned to them.</div>
       </div></li>
       <li><input type="checkbox"><div>
-        <div class="main">AMER: click each monthly bar → do the campaign names and hours match real deliveries?</div>
-        <div class="hint">Look for duplicates (same campaign twice) or campaigns belonging to a different instructor.</div>
+        <div class="main">AMER: click a monthly bar → do the campaign names and hours match real deliveries you know happened?</div>
+        <div class="hint">Look for: the same campaign appearing twice (double-count), campaigns assigned to the wrong instructor, or campaigns with 0 hrs.</div>
       </div></li>
       <li><input type="checkbox"><div>
-        <div class="main">EMEA: do monthly totals feel right? (No per-campaign drill-down — cross-reference Google Sheet if in doubt.)</div>
+        <div class="main">For a campaign that looks wrong — open it in Salesforce and verify these four fields:</div>
+        <div class="sf-step">
+          <strong>In Salesforce → Campaign record, check:</strong>
+          <ol>
+            <li><code>Start_Time__c</code> and <code>End_Time__c</code> — both should be in HH:MM:SS format. Blank = 0 hrs.</li>
+            <li><code>StartDate</code> and <code>EndDate</code> — should match the actual delivery days only, not span extra weekends.</li>
+            <li><code>Address__c</code> — should say a street address for onsite (gets 16 travel hrs) or contain "Virtual" for online (0 travel hrs).</li>
+            <li><code>Instructor__c</code> — confirms the right instructor is assigned to the campaign.</li>
+          </ol>
+        </div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">EMEA / APAC / LATAM: do monthly totals feel right? Cross-reference the FY27 Event Util Days Matrix Google Sheet for those months.</div>
+        <div class="hint">No per-campaign drill-down available for these regions — the dashboard shows Google Sheet monthly aggregates only.</div>
       </div></li>
     </ul>
     <div class="flag">
-      <strong>Red flags</strong>
+      <strong>Red flags to look for</strong>
       <ul>
-        <li><strong>0 hrs</strong> for an active teaching month → missing campaign data or blank time fields</li>
-        <li><strong>300+ hrs in one month</strong> → multi-week course entered as one long campaign instead of weekly splits</li>
-        <li><strong>Travel hours every month</strong> for a virtual-only instructor → Address field has a street address instead of "Virtual"</li>
-        <li><strong>No travel hours</strong> for an instructor who regularly teaches onsite → Address field may say "Virtual" incorrectly</li>
+        <li><strong>0 hrs in a month</strong> the instructor was actively teaching → blank Start/End Time, or campaign not assigned to them</li>
+        <li><strong>300+ hrs in one month</strong> → multi-week course entered as one long campaign; should be split into one campaign per week</li>
+        <li><strong>Travel hours (T) every month</strong> for a virtual-only instructor → Address field contains a street address, not "Virtual"</li>
+        <li><strong>No travel hours</strong> for an instructor who regularly teaches onsite → Address field may incorrectly say "Virtual"</li>
+        <li><strong>Same campaign appearing twice</strong> in a month's drill-down → duplicate campaign records in Salesforce</li>
       </ul>
     </div>
   </div>

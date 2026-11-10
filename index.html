@@ -2001,16 +2001,16 @@ function openModal(inst) {
   for (let i = 0; i <= Math.max(currYmIdx, 0) && i < fyMonths.length; i++) {
     m2pWindow.push({ ym: fyMonths[i], label: D.month_labels[i] });
   }
-  // 4 months ahead (may go beyond the FY array)
+  // 4 months ahead, capped at end of FY
   const lastFyYm = fyMonths[fyMonths.length - 1];
   for (let ahead = 1; ahead <= 4; ahead++) {
     const base = currYmIdx >= 0 ? currYm : lastFyYm;
     const [yr, mo] = base.split('-').map(Number);
     const d2 = new Date(yr, mo - 1 + ahead, 1);
     const ym2 = d2.getFullYear() + '-' + String(d2.getMonth() + 1).padStart(2, '0');
+    if (ym2 > lastFyYm) break; // stop at FY end
     const fyIdx = fyMonths.indexOf(ym2);
-    const lbl = fyIdx >= 0 ? D.month_labels[fyIdx] : (d2.toLocaleString('default', {month:'short'}) + ' ' + String(d2.getFullYear()).slice(2));
-    m2pWindow.push({ ym: ym2, label: lbl });
+    m2pWindow.push({ ym: ym2, label: D.month_labels[fyIdx] });
   }
 
   // Build month-to-plan rows using string concatenation

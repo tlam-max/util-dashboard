@@ -653,9 +653,18 @@
   <ul>
     <li><strong>3 KPI tiles:</strong>
       <ul>
-        <li><strong>Total Hours / FY27 Target</strong> — shows actual hours and full-year target in one tile (e.g. "820 / 1,200"), with % of target and hours remaining underneath. Color-coded green / amber / red by pace status.</li>
+        <li><strong>Total Completed and Planned Hours / FY27 Target</strong> — shows actual + scheduled hours against the full-year 1,200 hr target (e.g. "820 / 1,200"), with % of target and hours remaining underneath. Color-coded green / amber / red by pace status.</li>
         <li><strong>Pace vs Target (YTD)</strong> — shows how many hours ahead or behind the instructor is relative to where they <em>should</em> be right now. Compares YTD actual hours (current month and earlier only) against the cumulative expected target for those same months, based on their ramp schedule. Positive = ahead of pace (green); slightly negative = at risk (amber); further behind = red. Sub-label shows "X hrs expected through [current month]".</li>
         <li><strong>Teaching + Prep</strong> — total teaching and prep hours, with travel hours as a sub-label.</li>
+      </ul>
+    </li>
+    <li><strong>Month to Plan</strong> — a rolling delivery view showing how an instructor is tracking against target from the start of the FY through the current month, plus up to 4 months ahead (capped at January 31, the end of FY27). Each month row shows a progress bar, hours, and a status badge (Completed / Current / Planned).
+      <ul>
+        <li><strong>Completed</strong> — past months; bar color reflects performance (green ≥ 90%, amber ≥ 70%, red below 70% of the 100 hr monthly target).</li>
+        <li><strong>Current</strong> — the current calendar month, shown in blue.</li>
+        <li><strong>Planned</strong> — future months within the FY that have campaigns already scheduled; shown in gray.</li>
+        <li><strong>% of prorated target</strong> — the summary figure at the bottom right. Formula: <em>(total delivered + total planned hours) ÷ (1,200 × window_months / 12)</em>. The denominator is the proportional annual target for exactly the number of months shown — not an average of monthly percentages. For example, if the window covers 13 months, the denominator is 1,200 × 13/12 = 1,300 hrs.</li>
+        <li>Purpose: gives a forward-looking view of whether an instructor has enough bookings in the pipeline to finish the year on target, rather than only showing what has already happened.</li>
       </ul>
     </li>
     <li><strong>Monthly breakdown chart</strong> — stacked bar chart for FY27. For new hires, three phases are visually annotated:

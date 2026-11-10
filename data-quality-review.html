@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Quality Review — Delivery Manager Checklist</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; color: #1a1a2e; background: #f8f9fc; line-height: 1.6; }
+  .page { max-width: 780px; margin: 40px auto; padding: 0 24px 80px; }
+
+  header { margin-bottom: 32px; border-bottom: 3px solid #0070d2; padding-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 700; color: #0070d2; margin-bottom: 4px; }
+  header p { color: #666; font-size: 13px; }
+
+  .intro { background: #e8f4fd; border-left: 4px solid #0070d2; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-bottom: 28px; font-size: 14px; }
+
+  .section { margin-bottom: 28px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .section-header h2 { font-size: 14px; font-weight: 700; color: #1a1a2e; text-transform: uppercase; letter-spacing: 0.5px; }
+  .num { background: #0070d2; color: #fff; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+  .checks { list-style: none; background: #fff; border: 1px solid #dde3ed; border-radius: 8px; overflow: hidden; }
+  .checks li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 16px; border-bottom: 1px solid #f0f2f7; font-size: 14px; }
+  .checks li:last-child { border-bottom: none; }
+  .checks li input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; width: 15px; height: 15px; accent-color: #0070d2; cursor: pointer; }
+  .checks li .main { font-weight: 500; }
+  .checks li .hint { font-size: 12px; color: #888; margin-top: 2px; }
+
+  .flag { background: #fff8e1; border: 1px solid #f4d57a; border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-top: 8px; }
+  .flag strong { color: #8a6200; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .flag ul { padding-left: 16px; }
+  .flag li { margin-bottom: 3px; color: #555; }
+
+  .escalate { background: #fff; border: 1px solid #dde3ed; border-radius: 8px; overflow: hidden; }
+  .escalate table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .escalate th { background: #f0f4fb; text-align: left; padding: 8px 12px; font-weight: 600; color: #444; border-bottom: 2px solid #dde3ed; }
+  .escalate td { padding: 8px 12px; border-bottom: 1px solid #f0f2f7; vertical-align: top; }
+  .escalate tr:last-child td { border-bottom: none; }
+
+  hr { border: none; border-top: 1px solid #eef1f6; margin: 24px 0; }
+  footer { text-align: center; font-size: 12px; color: #bbb; margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Data Quality Review — Delivery Manager Checklist</h1>
+    <p>Training &amp; Certification · FY27 · Open the dashboard alongside this checklist</p>
+  </header>
+
+  <div class="intro">
+    <strong>How to use this:</strong> Open <strong>https://tlam-max.github.io/util-dashboard/</strong>, filter to your team on the By Instructor tab, and work through each section. Tick each item as you go. Flag anything that doesn't look right using the escalation table at the bottom.
+  </div>
+
+  <!-- 1 -->
+  <div class="section">
+    <div class="section-header"><span class="num">1</span><h2>Team total sanity check</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">By Manager tab → your team bar → does the total feel right for the months elapsed?</div>
+        <div class="hint">Quick estimate: headcount × months active × 100 hrs. A ±30% gap is worth investigating.</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">Click your team bar → confirm the headcount in the modal matches your actual active roster.</div>
+        <div class="hint">Missing instructor = their Contact record likely lacks "Certified Instructor + Salesforce Employee + Active" flags.</div>
+      </div></li>
+    </ul>
+  </div>
+
+  <!-- 2 -->
+  <div class="section">
+    <div class="section-header"><span class="num">2</span><h2>Per-instructor review</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">Click each instructor name → does their monthly chart look reasonable with no unexplained spikes or zero months?</div>
+        <div class="hint">A zero month for an active instructor usually means blank Start/End Time on a campaign, or campaigns weren't assigned to them.</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">AMER: click each monthly bar → do the campaign names and hours match real deliveries?</div>
+        <div class="hint">Look for duplicates (same campaign twice) or campaigns belonging to a different instructor.</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">EMEA: do monthly totals feel right? (No per-campaign drill-down — cross-reference Google Sheet if in doubt.)</div>
+      </div></li>
+    </ul>
+    <div class="flag">
+      <strong>Red flags</strong>
+      <ul>
+        <li><strong>0 hrs</strong> for an active teaching month → missing campaign data or blank time fields</li>
+        <li><strong>300+ hrs in one month</strong> → multi-week course entered as one long campaign instead of weekly splits</li>
+        <li><strong>Travel hours every month</strong> for a virtual-only instructor → Address field has a street address instead of "Virtual"</li>
+        <li><strong>No travel hours</strong> for an instructor who regularly teaches onsite → Address field may say "Virtual" incorrectly</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="section">
+    <div class="section-header"><span class="num">3</span><h2>Hours calculation spot-check</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">Pick 2–3 recent campaigns for an AMER instructor. Do the hours match this formula?</div>
+        <div class="hint">Final Util = (days × daily hrs × 1.3) + travel. Example: 5-day onsite, 8 hrs/day → (5 × 8 × 1.3) + 16 = <strong>68 hrs</strong>.</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">Are multi-week courses entered as separate campaigns per week — not one long campaign spanning weeks?</div>
+        <div class="hint">One campaign running Mon Week 1 → Fri Week 3 = 15 calendar days, inflating hours if there were non-teaching days in between.</div>
+      </div></li>
+    </ul>
+  </div>
+
+  <!-- 4 -->
+  <div class="section">
+    <div class="section-header"><span class="num">4</span><h2>Month to Plan (forward view)</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">In each instructor modal, does the Month to Plan section show upcoming campaigns already booked in future months?</div>
+        <div class="hint">A future month showing 0 hrs means no campaigns are assigned yet in Salesforce — is that accurate, or are bookings missing?</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">Is the "% of prorated target" at the bottom consistent with where you'd expect the instructor to finish the year?</div>
+        <div class="hint">Below 70% with few months left and nothing planned = a real pipeline gap, not a data issue. Above 100% = ahead of target.</div>
+      </div></li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <div class="section">
+    <div class="section-header"><span class="num">5</span><h2>New hire ramp dates</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">For each new hire, does the modal chart show the correct three phases — amber (0%), blue (50%), green (100%) — in the right months?</div>
+        <div class="hint">Phases: months 1–3 = ramp (0 hrs target), months 4–6 = 50 hrs/month, month 7+ = 100 hrs/month. Misaligned shading = wrong start date in the data.</div>
+      </div></li>
+    </ul>
+  </div>
+
+  <!-- 6 -->
+  <div class="section">
+    <div class="section-header"><span class="num">6</span><h2>APAC / LATAM (Google Sheet source)</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">Do your APAC/LATAM instructors' monthly totals match the FY27 Event Util Days Matrix Google Sheet?</div>
+        <div class="hint">Formula: util days × 8 hrs × 1.3 + travel. The dashboard number should match within rounding.</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">Are there any months where the Google Sheet has data but the dashboard shows zero — or vice versa?</div>
+        <div class="hint">Either direction is a data load issue. Note the instructor name and month and escalate.</div>
+      </div></li>
+    </ul>
+  </div>
+
+  <!-- 7 -->
+  <div class="section">
+    <div class="section-header"><span class="num">7</span><h2>Attendees (By Impact tab)</h2></div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">Filter By Impact to your region → does the total attendee count look proportionate to your team's delivery volume?</div>
+        <div class="hint">Rough check: sessions × average class size (~15–20 learners). A big gap = Attendee_Total__c field not being updated after delivery.</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">Click an instructor in the leaderboard → do per-campaign attendee counts look accurate? (A public course showing 1 attendee = data entry error.)</div>
+      </div></li>
+    </ul>
+  </div>
+
+  <hr>
+
+  <!-- Escalate -->
+  <div class="section">
+    <div class="section-header"><h2 style="text-transform:uppercase;letter-spacing:0.5px;font-size:14px;color:#c8223e">If you find an issue — escalate with:</h2></div>
+    <div class="escalate">
+      <table>
+        <thead><tr><th>Issue</th><th>Send to</th><th>Include</th></tr></thead>
+        <tbody>
+          <tr><td>Blank Start/End Time on a campaign</td><td>Ops / campaign data owner</td><td>Campaign name, instructor, month</td></tr>
+          <tr><td>Wrong Address (virtual vs. onsite)</td><td>Ops / campaign data owner</td><td>Campaign name, what it shows vs. what it should</td></tr>
+          <tr><td>Multi-week campaign entered as one block</td><td>Ops / campaign data owner</td><td>Campaign name, correct weekly split</td></tr>
+          <tr><td>Instructor missing from dashboard</td><td>Salesforce admin</td><td>Full name — check Active, Certified, Salesforce Employee flags</td></tr>
+          <tr><td>Wrong new hire ramp dates</td><td>Dashboard owner</td><td>Instructor name, correct start / 50% / 100% months</td></tr>
+          <tr><td>APAC/LATAM mismatch vs. Google Sheet</td><td>Dashboard owner</td><td>Instructor, month(s), correct value from Sheet</td></tr>
+          <tr><td>Attendee count wrong or missing</td><td>Ops / campaign data owner</td><td>Campaign name/ID, correct count</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>Training &amp; Certification · FY27 Data Quality Checklist</footer>
+
+</div>
+</body>
+</html>

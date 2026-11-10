@@ -226,7 +226,7 @@
   <a href="#type-mapping">Campaign Types</a>
   <a href="#new-hires">New Hires</a>
   <a href="#dashboard-features">Dashboard Features</a>
-  <a href="#salesforce-report">Salesforce Report</a>
+  <a href="#salesforce-report">Salesforce Reports</a>
   <a href="#known-issues">Known Issues</a>
   <a href="#talking-points">Talking Points</a>
   <a href="#faq">FAQ</a>
@@ -249,7 +249,7 @@
     <a href="#type-mapping" class="toc-item">Campaign Types<span>How types map to colors</span></a>
     <a href="#new-hires" class="toc-item">New Hire Logic<span>Ramp + pro-rated targets</span></a>
     <a href="#dashboard-features" class="toc-item">Dashboard Features<span>Filters, drilldowns, modals</span></a>
-    <a href="#salesforce-report" class="toc-item">Salesforce Report<span>Filters, structure, known limits</span></a>
+    <a href="#salesforce-report" class="toc-item">Salesforce Reports<span>3 reports: FTE util, subco, impact</span></a>
     <a href="#known-issues" class="toc-item">Known Issues<span>APAC/LATAM data gap</span></a>
     <a href="#talking-points" class="toc-item">Talking Points<span>How to tell the story</span></a>
   </div>
@@ -262,8 +262,9 @@
     <tr><td><strong>New hires (mid-FY27)</strong></td><td>16 instructors with a 3-month ramp; targets pro-rated from their billing start month</td></tr>
     <tr><td><strong>Annual target</strong></td><td>1,200 hrs/year &mdash; 100 hrs/month per active instructor</td></tr>
     <tr><td><strong>Total FY27 hours (to date)</strong></td><td>~57,100 hrs across all 72 instructors</td></tr>
-    <tr><td><strong>Salesforce report</strong></td><td>Campaigns with Contacts with User (custom report type)</td></tr>
+    <tr><td><strong>Salesforce reports</strong></td><td>3 reports: FTE Util (Campaigns with Contacts with User), Subco Deliveries (CampaignList), FTE Attendee Impact (CampaignList)</td></tr>
     <tr><td><strong>Supplemental data</strong></td><td>Google Sheet &mdash; FY27 Event Util Days Matrix</td></tr>
+    <tr><td><strong>Dashboard tabs</strong></td><td>By Region · By Manager · By Instructor · By Cloud · By Subco · By Impact</td></tr>
   </table>
 </section>
 
@@ -623,10 +624,10 @@
     <tr><th>Cloud</th><th>Course code prefixes</th></tr>
     <tr><td>Agentforce</td><td><code>AGT</code> <code>AFS</code> <code>AIF</code></td></tr>
     <tr><td>Data 360</td><td><code>SDC</code></td></tr>
-    <tr><td>Tableau</td><td><code>TTD</code> <code>TAB</code> <code>TVA</code> <code>TTP</code> <code>TSA</code> <code>TNX</code> <code>ADX</code></td></tr>
-    <tr><td>MuleSoft</td><td><code>MSA</code> <code>ARC</code> <code>OPS</code> <code>MAX</code> + DEX (except DEX450/DEX602)</td></tr>
-    <tr><td>Platform</td><td><code>OMS</code> <code>PDX</code> <code>BSX</code> <code>FSL</code> <code>BRE</code> <code>SFS</code> <code>CRT</code> <code>INS</code> <code>ASC</code> <code>SSC</code> <code>DEX450</code> <code>DEX602</code></td></tr>
-    <tr><td>Revenue Cloud</td><td><code>REV</code></td></tr>
+    <tr><td>Tableau</td><td><code>TTD</code> <code>TAB</code> <code>TVA</code> <code>TTP</code> <code>TSA</code> <code>TNX</code></td></tr>
+    <tr><td>MuleSoft</td><td><code>MSA</code> <code>ARC</code> <code>OPS</code> <code>MAX</code></td></tr>
+    <tr><td>Platform</td><td><code>ADX</code> <code>ANC</code> <code>OMS</code> <code>PDX</code> <code>BSX</code> <code>FSL</code> <code>BRE</code> <code>SFS</code> <code>CRT</code> <code>INS</code> <code>ASC</code> <code>SSC</code></td></tr>
+    <tr><td>Revenue Cloud</td><td><code>REV</code> <code>CPQ</code></td></tr>
     <tr><td>Marketing Cloud</td><td><code>MKT</code> <code>MOC</code></td></tr>
     <tr><td>Commerce Cloud</td><td><code>CCD</code> <code>CCM</code> <code>B2B</code> <code>B2C</code></td></tr>
     <tr><td>Industries</td><td><code>IND</code> <code>DGN</code> <code>DSF</code> <code>LSC</code></td></tr>
@@ -689,20 +690,82 @@
     <tr><td>Manager dropdown</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
     <tr><td>Sort (column headers)</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
     <tr><td>Dark / Light mode</td><td>Header bar</td><td>Visual only</td></tr>
+    <tr><td>Region / Cloud / Company pills</td><td>By Subco tab</td><td>By Subco tab only</td></tr>
+    <tr><td>Region / Cloud / Manager pills</td><td>By Impact tab</td><td>By Impact tab only</td></tr>
   </table>
+
+  <h3>By Subco tab</h3>
+  <p>Shows subcontractor (external delivery partner) bookings for FY27 — <strong>separate from FTE instructor data</strong>. Source: <code>CampaignList</code> Salesforce report filtered to campaigns where <code>Delviery_Company__c</code> is not <code>salesforce.com</code>.</p>
+  <ul>
+    <li><strong>3 KPI tiles:</strong> Total Days booked, Bookings (campaign count), Companies used</li>
+    <li><strong>Monthly stacked bar chart:</strong> days delivered per month, stacked by course — colored by cloud. Visible immediately, no click required.</li>
+    <li><strong>Click a month bar</strong> to see which subcontractor companies were booked that month and which courses they delivered, along with day counts.</li>
+    <li><strong>Cloud bars:</strong> horizontal bars showing total days by cloud for the filtered set. Click a cloud bar to drill into the individual courses delivered for that cloud.</li>
+    <li><strong>Filter pills:</strong> Region (AMER / APAC / EMEA / JP / LATAM), Cloud, and Company — all cross-filter the chart and cloud bars simultaneously.</li>
+  </ul>
+  <div class="callout blue">
+    <p><strong>Primary metric is days, not hours.</strong> Subco campaigns use <code>Campaign.Course_Days__c</code> as the volume metric rather than hours, because subco booking structures vary too widely across regions for hours to be a meaningful apples-to-apples comparison. Days are a cleaner, simpler indicator of delivery scale.</p>
+  </div>
+  <table>
+    <tr><th>Salesforce field</th><th>Used for</th></tr>
+    <tr><td><code>Campaign.Course_Days__c</code></td><td>Primary metric (days)</td></tr>
+    <tr><td><code>Campaign.Duration_Hours__c</code></td><td>Secondary metric (hours, shown in drilldown)</td></tr>
+    <tr><td><code>Campaign.Attendee_Total__c</code></td><td>Bookings count</td></tr>
+    <tr><td><code>Campaign.Delviery_Company__c</code></td><td>Subcontractor company name (note: field name has a typo — "Delviery" not "Delivery")</td></tr>
+    <tr><td><code>Campaign.Item_Id__c</code></td><td>Course code, used to classify into cloud</td></tr>
+    <tr><td><code>Campaign.Region__c</code></td><td>Region filter</td></tr>
+  </table>
+  <p><strong>Salesforce report:</strong> Deliveries by Subcos FY27 — Leader Report &nbsp;|&nbsp; ID: <code>00OdK000003pKe5UAE</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> (standard Campaigns) &nbsp;|&nbsp; Grouped: Region → Month → Course</p>
+
+  <h3>By Impact tab</h3>
+  <p>Shows attendee reach for <strong>FTE-delivered campaigns only</strong> — how many people our instructors are connecting with. This tab is a scale and reach view, not a utilization view. Source: <code>Campaign.Attendee_Total__c</code> (a plain number field on Campaign, not a formula) filtered to <code>Delviery_Company__c = salesforce.com</code> (FTE campaigns only).</p>
+  <ul>
+    <li><strong>3 KPI tiles:</strong> Total Attendees, Avg Class Size (attendees per session with &gt;0 attendees), Sessions count</li>
+    <li><strong>Attendees by Month:</strong> bar chart showing total attendees reached each month across FY27</li>
+    <li><strong>Attendees by Region:</strong> horizontal bars for AMER / APAC / EMEA / JP / LATAM</li>
+    <li><strong>Attendees by Cloud:</strong> horizontal bars showing total attendees + avg class size per cloud</li>
+    <li><strong>By Manager Team:</strong> horizontal bars showing each manager's team total attendees + avg class size — sourced from the FTE instructor roster's manager assignments</li>
+    <li><strong>Instructor Leaderboard:</strong> top 20 FTE instructors ranked by total attendees reached, with manager name, session count, and avg class size. JP/Korea-based subco instructors are excluded even if they appear on FTE-delivered campaigns — only instructors in the active FTE roster are shown.</li>
+    <li><strong>Filter pills:</strong> Region, Cloud, and Manager — all cross-filter all views simultaneously</li>
+  </ul>
+  <div class="callout blue">
+    <p><strong>Data scope:</strong> FTE campaigns only (<code>Delviery_Company__c = salesforce.com</code>). Total attendees: <strong>61,810</strong> across <strong>4,355 FTE campaigns</strong> for FY27 (as of Nov 2026). Subco-delivered attendees (18,487) are intentionally excluded — those belong to the By Subco tab context.</p>
+  </div>
+  <div class="callout amber">
+    <p><strong>Note on JP instructors:</strong> Some FTE-delivered campaigns in Japan have JP/Korea-based subcontractor contacts assigned as the instructor in <code>Campaign.Instructor__c</code>. These names do not appear in the FTE instructor roster and are excluded from the leaderboard. All their attendees are still counted in the region/cloud/monthly aggregates.</p>
+  </div>
+  <table>
+    <tr><th>Salesforce field</th><th>Used for</th></tr>
+    <tr><td><code>Campaign.Attendee_Total__c</code></td><td>Primary metric — total attendees per campaign (plain number field)</td></tr>
+    <tr><td><code>Campaign.Instructor__c</code></td><td>Instructor Contact lookup — used to attribute attendees to an instructor</td></tr>
+    <tr><td><code>Campaign.Region__c</code></td><td>Region filter and aggregation</td></tr>
+    <tr><td><code>Campaign.Item_Id__c</code></td><td>Course code → cloud classification</td></tr>
+    <tr><td><code>Campaign.Type</code></td><td>Public / Workshop / Bootcamp / Other breakdown</td></tr>
+    <tr><td><code>Campaign.Delviery_Company__c</code></td><td>Filter: only <code>salesforce.com</code> (FTE campaigns)</td></tr>
+  </table>
+  <p><strong>Salesforce report for verification:</strong> FY27 Impact - Attendees by Region &nbsp;|&nbsp; ID: <code>00OdK000003pqhBUAQ</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> &nbsp;|&nbsp; Grouped: Region → Month &nbsp;|&nbsp; Grand total: 61,810 attendees</p>
 </section>
 
 <!-- ─── SALESFORCE REPORT ──────────────────────────────────────────────────── -->
 <section id="salesforce-report">
-  <h2>Salesforce Report — FY27 NEW Delivery Util report*</h2>
-  <p>The source data for the dashboard is pulled from a Salesforce report in the T&amp;C org. This section documents the report's structure and the filter logic used to select the right instructors.</p>
+  <h2>Salesforce Reports</h2>
+  <p>The dashboard draws from three separate Salesforce reports in the T&amp;C org. Each serves a different tab and purpose.</p>
 
-  <h3>Report metadata</h3>
+  <div class="callout blue">
+    <p><strong>All three reports live in the shared T&amp;C reports folder</strong> (<code>00l4V000003YokyQAC</code>). They use <code>scope: orgAll</code> — required for the API to return records owned by integration users (APAC/LATAM campaigns use the TandC Integrations system user as Campaign Owner).</p>
+  </div>
+
+  <h3>Report 1 — FTE Utilization (By Region, Manager, Instructor, Cloud tabs)</h3>
+  <p>The primary FTE data source. Pulls instructor campaign records via the custom <code>Campaigns_with_Contacts_with_User__c</code> report type.</p>
+
+  <h4>Report metadata</h4>
   <table>
     <tr><th>Field</th><th>Value</th></tr>
     <tr><td><strong>Report name</strong></td><td>FY27 NEW Delivery Util report*</td></tr>
     <tr><td><strong>Report ID</strong></td><td><code>00OdK000003ndmTUAQ</code></td></tr>
     <tr><td><strong>Report type</strong></td><td>Campaigns with Contacts with User (<code>Campaigns_with_Contacts_with_User__c</code>) — custom report type that joins Campaign → Contact → User via Campaign Owner</td></tr>
+    <tr><td><strong>Grouped by</strong></td><td>Region → User (instructor) → Campaign Type</td></tr>
+    <tr><td><strong>Aggregates</strong></td><td>Sum of <code>Course_Days__c</code>, <code>Duration_Hours__c</code>, <code>Final_Util__c</code>, record count</td></tr>
   </table>
 
   <h3>Filter structure (18 filters)</h3>
@@ -755,6 +818,44 @@
     <tr><td>17</td><td>Mohina Sheikh</td><td>APAC</td></tr>
     <tr><td>18</td><td>Amanda Ortega</td><td>LATAM</td></tr>
   </table>
+
+  <h3>Report 2 — Subco Deliveries (By Subco tab)</h3>
+  <p>Pulls external delivery partner (subcontractor) campaign data. Uses the standard <code>CampaignList</code> report type, filtered to campaigns <em>not</em> delivered by salesforce.com.</p>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td><strong>Report name</strong></td><td>Deliveries by Subcos FY27 — Leader Report</td></tr>
+    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003pKe5UAE</code></td></tr>
+    <tr><td><strong>Report type</strong></td><td><code>CampaignList</code> (standard Campaigns)</td></tr>
+    <tr><td><strong>Grouped by</strong></td><td>Region → Month → Course (<code>Item_Id__c</code>)</td></tr>
+    <tr><td><strong>Aggregates</strong></td><td>Sum of <code>Attendee_Total__c</code>, <code>Course_Days__c</code>, <code>Duration_Hours__c</code>, record count</td></tr>
+    <tr><td><strong>Key filter</strong></td><td><code>Delviery_Company__c</code> ≠ <code>salesforce.com</code> — excludes FTE campaigns</td></tr>
+    <tr><td><strong>Date range</strong></td><td>StartDate ≥ 2026-02-01, ≤ 2027-01-31</td></tr>
+    <tr><td><strong>Status filter</strong></td><td>Excludes Cancelled, test, ignore</td></tr>
+  </table>
+  <div class="callout blue">
+    <p><strong>Why <code>CampaignList</code> instead of the custom report type?</strong> The custom <code>Campaigns_with_Contacts_with_User__c</code> type does not expose <code>Campaign.Attendee_Total__c</code>, <code>Campaign.Item_Id__c</code>, or <code>Campaign.Region__c</code> as valid detail columns. The standard <code>CampaignList</code> type exposes all three. Subco data is fetched via a separate SOQL query using the relationship field <code>Delviery_Company__r.Name</code> (note the field name typo — "Delviery" not "Delivery") and aggregated before being embedded in the dashboard.</p>
+  </div>
+
+  <h3>Report 3 — FTE Attendee Impact (By Impact tab)</h3>
+  <p>Shows attendee counts for FTE-delivered campaigns. Used to verify the numbers shown in the By Impact tab. Source field is <code>Campaign.Attendee_Total__c</code> — a plain number field (not a formula) on the Campaign object.</p>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td><strong>Report name</strong></td><td>FY27 Impact - Attendees by Region</td></tr>
+    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003pqhBUAQ</code></td></tr>
+    <tr><td><strong>Report type</strong></td><td><code>CampaignList</code> (standard Campaigns)</td></tr>
+    <tr><td><strong>Grouped by</strong></td><td>Region → Month</td></tr>
+    <tr><td><strong>Aggregates</strong></td><td>Sum of <code>Attendee_Total__c</code>, <code>Course_Days__c</code>, <code>Duration_Hours__c</code>, record count</td></tr>
+    <tr><td><strong>Key filter</strong></td><td><code>Delviery_Company__c</code> = <code>salesforce.com</code> — FTE campaigns only</td></tr>
+    <tr><td><strong>Date range</strong></td><td>StartDate ≥ 2026-02-01, ≤ 2027-01-31</td></tr>
+    <tr><td><strong>Status filter</strong></td><td>Excludes Cancelled, test, ignore</td></tr>
+    <tr><td><strong>Grand total (FY27 to date)</strong></td><td><strong>61,810 attendees</strong> across 4,336 FTE campaigns</td></tr>
+  </table>
+  <div class="callout blue">
+    <p><strong>Scope setting:</strong> All three reports require <code>scope: orgAll</code> (set via Salesforce Analytics API). Without it, reports created via the API default to the owner's own records only and return 0 rows — even with correct filters.</p>
+  </div>
+  <div class="callout amber">
+    <p><strong>Dashboard vs report totals:</strong> The By Impact tab data is pulled via SOQL directly on the Campaign object (<code>WHERE Delviery_Company__r.Name = 'salesforce.com'</code>), not from the report API. Minor differences (&lt;1%) between SOQL and report totals may occur due to status filter variations. Use Report 3 as the authoritative verification source.</p>
+  </div>
 </section>
 
 <!-- ─── KNOWN ISSUES ───────────────────────────────────────────────────────── -->

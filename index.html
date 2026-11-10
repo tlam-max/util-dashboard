@@ -1527,13 +1527,14 @@ function renderImpact() {
   });
   const cloudsSorted = IMPACT.clouds.filter(c => byCloud[c] > 0).sort((a,b) => byCloud[b] - byCloud[a]);
 
-  // By instructor
+  // By instructor — FTE roster only (D.instructors), excludes JP/Korea subco instructors
+  const FTE_NAMES = new Set(D.instructors.map(i => i.name));
   const byInst = {};
   const byInstSessions = {};
   filtered.forEach(r => {
     if (r[3] < 0) return;
     const name = IMPACT.instructors[r[3]];
-    if (!name) return;
+    if (!name || !FTE_NAMES.has(name)) return;
     byInst[name] = (byInst[name] || 0) + r[5];
     if (r[5] > 0) byInstSessions[name] = (byInstSessions[name] || 0) + 1;
   });

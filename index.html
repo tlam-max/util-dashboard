@@ -1994,7 +1994,7 @@ function openModal(inst) {
   body.innerHTML = `
     <div class="modal-kpis">
       <div class="modal-kpi"><div class="lbl">Pace vs Target (YTD)</div><div class="val" style="color:${paceColor}">${paceSign}${fmt(paceDelta)} hrs <span style="font-size:14px;font-weight:500">(${fmtPct(ytdPct)})</span></div><div class="sub">${fmt(expectedByNow)} hrs expected through ${D.month_labels[fyMonths.indexOf(elapsedMs[elapsedMs.length-1])]||currYm}</div></div>
-      <div class="modal-kpi"><div class="lbl">Total Hours / FY27 Target</div><div class="val" style="color:${sColor}">${fmt(tot)} <span style="font-size:14px;font-weight:500;color:var(--text2)">/ ${fmt(fyTarget)}</span></div><div class="sub">${fmtPct(pct)} of target · ${fmt(Math.max(0,fyTarget-tot))} remaining</div></div>
+      <div class="modal-kpi"><div class="lbl">Total Completed and Planned Hours / FY27 Target</div><div class="val" style="color:${sColor}">${fmt(tot)} <span style="font-size:14px;font-weight:500;color:var(--text2)">/ ${fmt(fyTarget)}</span></div><div class="sub">${fmtPct(pct)} of target · ${fmt(Math.max(0,fyTarget-tot))} remaining</div></div>
       ${kpiTile('Teaching + Prep', fmt(teach), fmt(trav)+' hrs travel', '')}
     </div>
     <div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Monthly Breakdown — FY27</div>

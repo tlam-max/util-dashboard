@@ -1604,14 +1604,14 @@ function renderImpact() {
         <h3 style="margin:0 0 12px;font-size:14px">Attendees by Region</h3>
         ${IMPACT.regions.filter(r => byRegion[r] > 0).sort((a,b) => byRegion[b]-byRegion[a]).map(r => {
           const pct = regionMaxAtt > 0 ? byRegion[r]/regionMaxAtt*100 : 0;
-          return \`<div style="margin-bottom:10px">
+          return `<div style="margin-bottom:10px">
             <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
               <span>\${r}</span><span style="color:var(--text-muted)">\${byRegion[r].toLocaleString()}</span>
             </div>
             <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
               <div style="height:100%;width:\${pct.toFixed(1)}%;background:var(--c-P);border-radius:4px"></div>
             </div>
-          </div>\`;
+          </div>`;
         }).join('')}
       </div>
     </div>
@@ -1623,7 +1623,7 @@ function renderImpact() {
           const cloudMax = byCloud[cloudsSorted[0]] || 1;
           const pct = byCloud[c]/cloudMax*100;
           const avgSz = byCloudSessions[c] > 0 ? (byCloud[c]/byCloudSessions[c]).toFixed(1) : '—';
-          return \`<div style="margin-bottom:9px">
+          return `<div style="margin-bottom:9px">
             <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
               <span style="display:flex;align-items:center;gap:6px">
                 <span style="width:8px;height:8px;border-radius:50%;background:\${cColor(c)};display:inline-block"></span>
@@ -1634,7 +1634,7 @@ function renderImpact() {
             <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
               <div style="height:100%;width:\${pct.toFixed(1)}%;background:\${cColor(c)};border-radius:3px"></div>
             </div>
-          </div>\`;
+          </div>`;
         }).join('')}
       </div>
       <div class="card" style="padding:16px">
@@ -1646,7 +1646,7 @@ function renderImpact() {
             : mgrsSorted.map(m => {
               const pct = byMgr[m]/mgrMax*100;
               const avgSz = byMgrSessions[m] > 0 ? (byMgr[m]/byMgrSessions[m]).toFixed(1) : '—';
-              return \`<div style="margin-bottom:9px">
+              return `<div style="margin-bottom:9px">
                 <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
                   <span>\${m}</span>
                   <span style="color:var(--text-muted)">\${byMgr[m].toLocaleString()} · avg \${avgSz}</span>
@@ -1654,7 +1654,7 @@ function renderImpact() {
                 <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
                   <div style="height:100%;width:\${pct.toFixed(1)}%;background:#6366F1;border-radius:3px"></div>
                 </div>
-              </div>\`;
+              </div>`;
             }).join('');
         })()}
       </div>
@@ -1683,7 +1683,7 @@ function renderImpact() {
               const avg = sess > 0 ? (att/sess).toFixed(1) : '—';
               const mgr = impactGetMgr(name);
               const ii = IMPACT.instructors.indexOf(name);
-              return \`<tr class="impact-inst-row" data-inst-idx="\${ii}" style="border-bottom:1px solid var(--border-light,#f0f0f0);cursor:pointer" onmouseover="this.style.background='var(--surface-hover,#f5f7fa)'" onmouseout="this.style.background=''">
+              return `<tr class="impact-inst-row" data-inst-idx="\${ii}" style="border-bottom:1px solid var(--border-light,#f0f0f0);cursor:pointer" onmouseover="this.style.background='var(--surface-hover,#f5f7fa)'" onmouseout="this.style.background=''">
                 <td style="padding:6px 8px;color:var(--text-muted)">\${idx+1}</td>
                 <td style="padding:6px 8px;font-weight:500;color:var(--c-P)">\${name}</td>
                 <td style="padding:6px 8px;color:var(--text-muted);font-size:12px">\${mgr}</td>
@@ -1693,7 +1693,7 @@ function renderImpact() {
               </tr>
               <tr class="impact-inst-detail" id="impact-detail-\${ii}" style="display:none">
                 <td colspan="6" style="padding:0"></td>
-              </tr>\`;
+              </tr>`;
             }).join('')}
           </tbody>
         </table>

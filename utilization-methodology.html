@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instructor Utilization Report — Methodology Summary</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; color: #1a1a2e; background: #f8f9fc; line-height: 1.6; }
+
+  .page { max-width: 860px; margin: 48px auto; padding: 0 24px 80px; }
+
+  header { margin-bottom: 48px; border-bottom: 3px solid #0070d2; padding-bottom: 24px; }
+  header h1 { font-size: 26px; font-weight: 700; color: #0070d2; margin-bottom: 6px; }
+  header p { color: #555; font-size: 14px; }
+
+  h2 { font-size: 18px; font-weight: 700; color: #0070d2; margin: 40px 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2 .num { background: #0070d2; color: #fff; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+
+  h3 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin: 20px 0 8px; }
+
+  p { margin-bottom: 12px; }
+
+  .card { background: #fff; border: 1px solid #dde3ed; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; }
+  .card:last-child { margin-bottom: 0; }
+
+  .field-label { display: inline-block; background: #e8f4fd; color: #005fb2; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; font-family: monospace; letter-spacing: 0.3px; }
+
+  .formula-block { background: #f4f7fb; border-left: 3px solid #0070d2; padding: 10px 14px; font-family: monospace; font-size: 13px; color: #333; border-radius: 0 4px 4px 0; margin: 10px 0; white-space: pre-wrap; line-height: 1.5; }
+
+  .callout { background: #fff8e1; border-left: 4px solid #f4b942; padding: 14px 18px; border-radius: 0 6px 6px 0; margin: 16px 0; font-size: 14px; }
+  .callout strong { display: block; margin-bottom: 4px; color: #8a6200; }
+
+  .example-row { display: flex; gap: 8px; align-items: center; font-size: 13px; color: #555; margin: 4px 0; }
+  .example-row .tag { background: #f0f0f0; padding: 2px 8px; border-radius: 4px; font-family: monospace; color: #333; }
+  .example-row .arrow { color: #aaa; }
+  .example-row .result { font-weight: 700; color: #1a7a4a; }
+
+  .target-box { background: linear-gradient(135deg, #0070d2 0%, #005fb2 100%); color: #fff; border-radius: 10px; padding: 24px 28px; margin: 16px 0; }
+  .target-box .big { font-size: 48px; font-weight: 800; line-height: 1; }
+  .target-box .label { font-size: 14px; opacity: 0.85; margin-top: 6px; margin-bottom: 18px; }
+  .target-box .math { font-size: 14px; opacity: 0.9; font-family: monospace; background: rgba(255,255,255,0.15); padding: 10px 14px; border-radius: 6px; }
+
+  .filter-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  .filter-table th { background: #f0f4fb; text-align: left; padding: 8px 12px; font-weight: 600; color: #444; border-bottom: 2px solid #dde3ed; }
+  .filter-table td { padding: 8px 12px; border-bottom: 1px solid #eef1f6; vertical-align: top; }
+  .filter-table tr:last-child td { border-bottom: none; }
+
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 16px 0; font-size: 14px; }
+  .flow .box { background: #e8f4fd; border: 1px solid #b3d4f5; padding: 8px 14px; border-radius: 6px; font-weight: 600; color: #005fb2; }
+  .flow .op { color: #888; font-size: 18px; font-weight: 300; }
+  .flow .equals { color: #0070d2; font-weight: 700; font-size: 16px; }
+  .flow .result-box { background: #e6f4ea; border: 1px solid #a8d5b5; padding: 8px 14px; border-radius: 6px; font-weight: 700; color: #1a7a4a; }
+
+  .tldr { background: #1a1a2e; color: #fff; border-radius: 10px; padding: 24px 28px; margin-bottom: 40px; }
+  .tldr h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #7a9cc8; margin-bottom: 16px; font-weight: 600; }
+  .tldr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tldr-item { background: rgba(255,255,255,0.07); border-radius: 6px; padding: 12px 14px; }
+  .tldr-item .tldr-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #7a9cc8; margin-bottom: 4px; font-weight: 600; }
+  .tldr-item .tldr-formula { font-family: monospace; font-size: 13px; color: #e8f4fd; line-height: 1.5; }
+  .tldr-item .tldr-note { font-size: 12px; color: #aab8cc; margin-top: 5px; }
+  .tldr-final { margin-top: 12px; background: rgba(0,112,210,0.35); border: 1px solid rgba(0,112,210,0.6); border-radius: 6px; padding: 14px 16px; }
+  .tldr-final .tldr-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #7ac8ff; margin-bottom: 6px; font-weight: 600; }
+  .tldr-final .tldr-formula { font-family: monospace; font-size: 14px; color: #fff; font-weight: 600; }
+  .tldr-target { margin-top: 12px; display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px 16px; }
+  .tldr-target .tldr-big { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
+  .tldr-target .tldr-target-text { font-size: 13px; color: #aab8cc; line-height: 1.5; }
+  @media (max-width: 560px) { .tldr-grid { grid-template-columns: 1fr; } }
+
+  .toc { background: #fff; border: 1px solid #dde3ed; border-radius: 8px; padding: 18px 24px; margin-bottom: 40px; }
+  .toc h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 12px; font-weight: 600; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; font-size: 14px; color: #0070d2; }
+  .toc a { color: #0070d2; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .divider { border: none; border-top: 1px solid #eef1f6; margin: 32px 0; }
+
+  @media (max-width: 600px) {
+    .flow { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Instructor Utilization Report — Methodology Summary</h1>
+    <p>Training &amp; Certification · Worldwide Instructor Team · FY27</p>
+  </header>
+
+  <div class="tldr">
+    <h3>TL;DR — Quick Reference</h3>
+    <div class="tldr-grid">
+      <div class="tldr-item">
+        <div class="tldr-name">Duration Hours</div>
+        <div class="tldr-formula">End Time − Start Time</div>
+        <div class="tldr-note">Daily teaching hours, 1 decimal place</div>
+      </div>
+      <div class="tldr-item">
+        <div class="tldr-name">Actual Util Hours</div>
+        <div class="tldr-formula">Campaign Days × Duration Hours</div>
+        <div class="tldr-note">Calendar days used (bootcamps can run on weekends)</div>
+      </div>
+      <div class="tldr-item">
+        <div class="tldr-name">Travel Hours</div>
+        <div class="tldr-formula">16 hrs if onsite, else 0</div>
+        <div class="tldr-note">Onsite = Address field does not contain "Virtual"</div>
+      </div>
+      <div class="tldr-item">
+        <div class="tldr-name">Prep Multiplier</div>
+        <div class="tldr-formula">× 1.3</div>
+        <div class="tldr-note">+30% added to teaching hours for prep time</div>
+      </div>
+    </div>
+    <div class="tldr-final">
+      <div class="tldr-name">Final Util Hours (the number that matters)</div>
+      <div class="tldr-formula">(Actual Util Hours × 1.3) + Travel Hours</div>
+    </div>
+    <div class="tldr-target">
+      <div class="tldr-big">1,200</div>
+      <div class="tldr-target-text">hrs/year target · 12.7 days/month × 8 hrs × 12 months = 1,219.2 → rounded down to 1,200</div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#report">Report Overview</a></li>
+      <li><a href="#population">Instructor Population (Filters)</a></li>
+      <li><a href="#manager-groups">Manager Group Filters (Hardcoded Names)</a></li>
+      <li><a href="#fields">Calculated Fields</a></li>
+      <li><a href="#formula">Final Utilization Formula</a></li>
+      <li><a href="#target">Yearly Utilization Target</a></li>
+      <li><a href="#example">Worked Example</a></li>
+      <li><a href="#known-issues">Known Issue: APAC / LATAM Missing Data</a></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. Report Overview ───────────────────────────────────────── -->
+  <h2 id="report"><span class="num">1</span> Report Overview</h2>
+  <div class="card">
+    <p>The report is built on a custom report type called <strong>Campaigns with Contacts with User</strong>. It traverses three objects:</p>
+    <p style="font-family:monospace; font-size:13px; background:#f4f7fb; padding:10px 14px; border-radius:4px; margin:10px 0;">
+      User → Contact (via Instructor_User_Record__c) → Campaign (via Instructor__c)
+    </p>
+    <p>Each row represents one campaign delivery assigned to an instructor. The report is filtered to show only active, certified Salesforce FTE instructors (see Section 2) and aggregated by instructor to produce individual and team-level utilization totals.</p>
+  </div>
+
+  <!-- ── 2. Instructor Population ────────────────────────────────── -->
+  <h2 id="population"><span class="num">2</span> Instructor Population (Filters)</h2>
+  <div class="card">
+    <p>The following filters ensure only legitimate FTE instructors on the internal delivery team appear in the report:</p>
+    <table class="filter-table">
+      <thead><tr><th>Field</th><th>Value</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Contact: Instructor Status</td><td>Certified Instructor</td><td>Excludes trainees and retired instructors</td></tr>
+        <tr><td>Contact: Instructor Type</td><td>Salesforce Employee</td><td>Excludes contractors and partners</td></tr>
+        <tr><td>Contact: Account Name</td><td>salesforce.com</td><td>Confirms internal Salesforce headcount</td></tr>
+        <tr><td>Contact: Active Contact</td><td>True</td><td>Excludes deactivated records</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 3. Manager Group Filters ──────────────────────────────────── -->
+  <h2 id="manager-groups"><span class="num">3</span> Manager Group Filters (Hardcoded Names)</h2>
+  <div class="card">
+    <p>The report uses a second layer of filters — filters 10 through 16 — to scope results to only the instructors on the worldwide delivery team. These are <strong>User.Name contains</strong> filters, one per manager group, combined with OR logic so a campaign is included if the Campaign Owner matches <em>any</em> of the seven groups.</p>
+
+    <div class="callout">
+      <strong>Why hardcode names instead of using a Manager field?</strong>
+      The report type only exposes 9 User fields and does not traverse the User → Manager relationship (i.e. <code>User.Manager.Name</code> is not available). The Contact object's <code>Manager__c</code> field is only populated for Candidate Instructors, not Certified Instructors. Hardcoding full names in <code>User.Name contains</code> filters was the lowest-risk approach that works reliably within the current report type.
+    </div>
+
+    <p>The full boolean logic across all 16 filters is:</p>
+    <div class="formula-block">1 AND 2 AND 3 AND 4 AND 5 AND 6 AND 7 AND 8 AND 9
+AND (10 OR 11 OR 12 OR 13 OR 14 OR 15 OR 16 OR 17 OR 18)</div>
+    <p style="font-size:13px;color:#666;margin-top:8px;">Filters 1–9 are the base criteria from Section 2. Filters 10–18 are the manager groups below — one filter per manager.</p>
+
+    <table class="filter-table" style="margin-top:16px;">
+      <thead><tr><th>#</th><th>Manager</th><th>Region</th><th>Instructor names in filter</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>10</td>
+          <td>Tammy Lam</td>
+          <td>AMER</td>
+          <td style="font-size:12px;">Andres Perez (v2.0), Eric Lynch, Gopal Erusu, Guillermo Medrano, Joseph Wilson, Joy Dixon (v2.0), Juraj Suja, Melody Yang, Stuart Werner, Teo Marcelo, Vincent Lowe</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>Mari Zahm</td>
+          <td>AMER</td>
+          <td style="font-size:12px;">Alyse DeBonnett, Bhalinder Singh, Brian Richardson, Candice Belandres, Elizabeth Jones, Jim Lepick, Kevin Johnson, Mike Clark, Ram Subramani</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>Wendy Braid</td>
+          <td>AMER</td>
+          <td style="font-size:12px;">Andrew Hamlin, Ben Conoley, Christina Obligar, Lisa Tulchin, Sophia Zurcher</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>Brent Feller</td>
+          <td>AMER</td>
+          <td style="font-size:12px;">Brittany Connolly, Chris Wirthwein, Debra Speer, Jake Emrich, Patrick Griffith, Rod Curvelo, Ruth Deckard</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td>Alex Theedom</td>
+          <td>EMEA</td>
+          <td style="font-size:12px;">Andres Cespedes, Gabriel Ostolaza Alfaro, Ingrid de Moraes, Isabelle Faure, Laura Maffezzini, Max Golov, Sebastien Colas, Simon Connock, Steven Smith</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td>Brendan Keating</td>
+          <td>EMEA</td>
+          <td style="font-size:12px;">Andrea Carvalho, Billy Flynn, Christian Zapla, Daniel Monk, Darren Hendrick, Marc Kerhoas, Mathias Artaud, Nidhi Jain, Paul Killeen</td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>Affa Khatoon</td>
+          <td>APAC</td>
+          <td style="font-size:12px;">A Architya, Aman Pandey, Gargi Singh, Junaid Ahmed Shaik, Krishna Chaitanya Naraharisetti, Mohd Wasil Khan, Mrunal Khandagale, Ram Undadi, Saravan Bhetanabhotia, Shahbaz Nasimi</td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td>Mohina Sheikh</td>
+          <td>APAC</td>
+          <td style="font-size:12px;">Biswajit Mohanty, Harini Shah, Krithika Pai, Md Rahbar Zaman, Monish Aditiya, Shani Elsa Shaji</td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td>Amanda Ortega</td>
+          <td>LATAM</td>
+          <td style="font-size:12px;">Carlos Torres, Elaina Williams, Freya Castro, Javier Garcia Salcedo, Julián Aguilar, Vania Ramirez</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="margin-top:16px;">
+      <strong>Maintenance note</strong>
+      If an instructor joins or leaves a team, their name must be manually added to or removed from the relevant filter. The filter uses <strong>contains</strong> (not equals), so partial name matches are possible — using full names reduces the risk of false positives compared to last-name-only matching, which was the previous approach.
+    </div>
+
+    <p style="font-size:13px;color:#666;margin-top:4px;">Filters 15 and 16 cover APAC and LATAM teams. These filters are correctly configured, but APAC/LATAM campaign data does not appear in the report results due to a structural data issue — see <a href="#known-issues" style="color:#0070d2;">Section 8</a>.</p>
+  </div>
+
+  <!-- ── 4. Calculated Fields ─────────────────────────────────────── -->
+  <h2 id="fields"><span class="num">4</span> Calculated Fields</h2>
+  <p>Four formula fields were created on the Campaign object to drive the utilization calculation. All are available as columns in the report.</p>
+
+  <div class="card">
+    <span class="field-label">Duration Hours</span>
+    <h3>Daily teaching hours for a campaign</h3>
+    <p>Computed from the campaign's <strong>Start Time</strong> and <strong>End Time</strong> fields (stored as text in HH:MM:SS format). Extracts hours and minutes separately, converts to decimal hours, and rounds to one decimal place.</p>
+    <div class="formula-block">IF(AND(LEN(Start_Time__c) >= 5, LEN(End_Time__c) >= 5),
+  ROUND(
+    (VALUE(LEFT(End_Time__c,2)) + VALUE(MID(End_Time__c,4,2))/60)
+    - (VALUE(LEFT(Start_Time__c,2)) + VALUE(MID(Start_Time__c,4,2))/60),
+  1),
+  NULL)</div>
+    <div class="example-row"><span class="tag">09:00 → 17:00</span><span class="arrow">→</span><span class="result">8.0 hrs</span></div>
+    <div class="example-row"><span class="tag">09:30 → 18:00</span><span class="arrow">→</span><span class="result">8.5 hrs</span></div>
+    <div class="example-row"><span class="tag">09:00 → 13:00</span><span class="arrow">→</span><span class="result">4.0 hrs</span></div>
+  </div>
+
+  <div class="card">
+    <span class="field-label">Actual Util Hours</span>
+    <h3>Total teaching hours for the campaign period</h3>
+    <p>Multiplies the number of calendar days in the campaign by the daily teaching hours. Calendar days are used (not business days) because some bootcamps run on weekends. Each campaign represents one contiguous delivery block — multi-week courses are entered as separate campaigns per week, so there are no embedded non-teaching weekends to exclude.</p>
+    <div class="formula-block">ROUND(
+  (EndDate - StartDate + 1) × Duration_Hours__c,
+1)</div>
+    <div class="example-row"><span class="tag">Mon–Fri, 8.5 hrs/day</span><span class="arrow">→</span><span class="result">5 × 8.5 = 42.5 hrs</span></div>
+    <div class="example-row"><span class="tag">Sat–Sun bootcamp, 8 hrs/day</span><span class="arrow">→</span><span class="result">2 × 8 = 16.0 hrs</span></div>
+  </div>
+
+  <div class="card">
+    <span class="field-label">Travel Hours</span>
+    <h3>16 hours added for any onsite delivery</h3>
+    <p>Instructors traveling to deliver in person receive an allowance of <strong>2 travel days (16 hours)</strong> per campaign. Whether a delivery is onsite is determined by the campaign's <strong>Address field</strong> — not the campaign name. Virtual deliveries always contain the word "Virtual" in the address; onsite deliveries have a physical street address.</p>
+    <div class="formula-block">IF(AND(
+  NOT(ISBLANK(Address__c)),
+  NOT(CONTAINS(Address__c, "Virtual"))
+), 16, 0)</div>
+    <div class="callout">
+      <strong>Why Address__c and not the campaign name?</strong>
+      Some private workshops have "Virtual" in their name but are delivered at a client's physical location (e.g., <em>"CCD102 - PW - Virtual - Luigi Lavazza"</em>). The Address field reliably distinguishes online from onsite regardless of naming conventions.
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="field-label">Final Util Hours</span>
+    <h3>Complete utilization figure per campaign</h3>
+    <p>Combines teaching hours (with prep multiplier) and travel hours into a single number.</p>
+    <div class="formula-block">ROUND(Actual_Util__c × 1.3 + Travel_Hours__c, 1)</div>
+    <p style="margin-top:10px; font-size:13px; color:#666;">The <strong>1.3 multiplier</strong> adds 30% to actual teaching hours to account for course preparation time — reviewing materials, updating content, setting up labs — which is real work time not captured in the delivery calendar.</p>
+  </div>
+
+  <!-- ── 5. Final Formula ──────────────────────────────────────────── -->
+  <h2 id="formula"><span class="num">5</span> Final Utilization Formula</h2>
+  <div class="card">
+    <p>Putting it all together, the final utilization hours for any campaign are:</p>
+    <div class="flow">
+      <div class="box">Actual Util Hrs<br><small style="font-weight:400;font-size:12px;">(days × daily hrs)</small></div>
+      <span class="op">×</span>
+      <div class="box">1.3<br><small style="font-weight:400;font-size:12px;">(prep multiplier)</small></div>
+      <span class="op">+</span>
+      <div class="box">Travel Hrs<br><small style="font-weight:400;font-size:12px;">(16 if onsite, else 0)</small></div>
+      <span class="equals">=</span>
+      <div class="result-box">Final Util Hrs</div>
+    </div>
+    <p style="margin-top:12px; font-size:13px; color:#666;">Summing <strong>Final Util Hours</strong> across all campaigns for an instructor gives their total utilization for any period. This is the primary metric used in the report's grand total and in the dashboard.</p>
+  </div>
+
+  <!-- ── 6. Yearly Target ──────────────────────────────────────────── -->
+  <h2 id="target"><span class="num">6</span> Yearly Utilization Target</h2>
+  <div class="card">
+    <p>The team's monthly target is <strong>12.7 teaching days per month</strong>. To convert this to an annual hours target:</p>
+    <div class="target-box">
+      <div class="big">1,200</div>
+      <div class="label">hours / year (annual utilization target)</div>
+      <div class="math">12.7 days/month × 8 hrs/day = 101.6 hrs/month
+101.6 hrs/month × 12 months  = 1,219.2 hrs/year
+→ rounded down to 1,200 hrs/year</div>
+    </div>
+    <p>The <strong>1,200 hour line</strong> is shown as a reference line in the report chart, providing a visual benchmark to quickly identify instructors who are on track, above, or below target for the fiscal year.</p>
+    <div class="callout">
+      <strong>Note on rounding</strong>
+      The target is rounded down (not to the nearest integer) to give instructors a slight buffer and keep the benchmark a clean, communicable number.
+    </div>
+  </div>
+
+  <!-- ── 7. Worked Example ─────────────────────────────────────────── -->
+  <h2 id="example"><span class="num">7</span> Worked Example</h2>
+  <div class="card">
+    <p>A sample calculation for a single instructor's campaign:</p>
+    <table class="filter-table">
+      <thead><tr><th>Input</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Campaign</td><td>ADX201 — 3-day onsite, Chicago</td></tr>
+        <tr><td>Start Date → End Date</td><td>Mon Mar 10 → Wed Mar 12 (3 days)</td></tr>
+        <tr><td>Start Time → End Time</td><td>09:00 → 17:00</td></tr>
+        <tr><td>Address</td><td>123 W Wacker Dr, Chicago, IL (no "Virtual")</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;">
+      <div class="example-row"><span style="width:180px; color:#555;">Duration Hours</span><span class="tag">17:00 − 09:00</span><span class="arrow">=</span><span class="result">8.0 hrs/day</span></div>
+      <div class="example-row"><span style="width:180px; color:#555;">Actual Util Hours</span><span class="tag">3 days × 8.0 hrs</span><span class="arrow">=</span><span class="result">24.0 hrs</span></div>
+      <div class="example-row"><span style="width:180px; color:#555;">Travel Hours</span><span class="tag">onsite → 16 hrs</span><span class="arrow">=</span><span class="result">16.0 hrs</span></div>
+      <div class="example-row"><span style="width:180px; color:#555;">Final Util Hours</span><span class="tag">24.0 × 1.3 + 16.0</span><span class="arrow">=</span><span class="result">47.2 hrs</span></div>
+    </div>
+  </div>
+
+  <!-- ── 8. Known Issue: APAC/LATAM ───────────────────────────────── -->
+  <h2 id="known-issues"><span class="num" style="background:#c8223e;">8</span> Known Issue: APAC / LATAM Missing Data</h2>
+
+  <div class="card">
+    <h3>What you see</h3>
+    <p>Instructors on the APAC and LATAM teams (filters 15 and 16) do not appear in the report results — even though the filters are correctly configured with their full names.</p>
+  </div>
+
+  <div class="card">
+    <h3>Root cause</h3>
+    <p>APAC and LATAM campaigns are created and owned by a system integration account called <strong>TandC Integrations</strong>. The instructor who delivers the session is stored in a custom field on the Campaign object: <code>Campaign.Instructor__c</code> — a Contact lookup, not Campaign Owner.</p>
+    <p>The report type joins Campaign → User via <strong>Campaign Owner only</strong>. It does not traverse <code>Campaign.Instructor__c</code>. Because of this:</p>
+    <ul style="margin: 8px 0 0 18px; font-size:14px; color:#444; line-height:1.7;">
+      <li><code>User.Name</code> filters match against the Campaign Owner — which is always "TandC Integrations" for APAC/LATAM.</li>
+      <li>No instructor name filter will ever match these records in the current report type, regardless of what names are listed.</li>
+      <li>Filters 15 and 16 are structurally correct but produce zero results because the data relationship they depend on does not exist in the current report type.</li>
+    </ul>
+    <div class="callout" style="margin-top:14px;">
+      <strong>Confirmed example</strong>
+      Campaign "APAC - ADX201 - 16 Feb" — Owner: TandC Integrations, <code>Instructor__c</code>: Shahbaz Nasimi (Contact). Shahbaz is listed in filter 15, but the campaign does not appear in report results.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Options to fix</h3>
+    <table class="filter-table">
+      <thead><tr><th>Option</th><th>Effort</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A · New custom report type</strong></td>
+          <td>Medium</td>
+          <td>Create a new CRT that joins Campaign → Contact via <code>Campaign.Instructor__c</code>, then Contact → User via <code>Contact.User__c</code>. Cleanest fix — filters would work as intended. Requires Salesforce admin access in Setup → Report Types.</td>
+        </tr>
+        <tr>
+          <td><strong>B · Update Campaign Owner in the integration</strong></td>
+          <td>Medium–High</td>
+          <td>Change the TandC Integrations automation to set Campaign Owner = the instructor's User record instead of (or alongside) <code>Instructor__c</code>. Makes the existing report type work without changes. Risk: may affect other automation that depends on TandC Integrations being the owner.</td>
+        </tr>
+        <tr>
+          <td><strong>C · Separate SOQL export for APAC/LATAM</strong></td>
+          <td>Low</td>
+          <td>Write a separate Salesforce report or SOQL query that reads <code>Campaign.Instructor__c</code> directly, then merge the data downstream. Quickest workaround without touching the report type or integration.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Current workaround</h3>
+    <p>APAC and LATAM utilization data is sourced separately from the <strong>Google Sheet (FY27 Event Util Days Matrix)</strong> as monthly aggregates. This is why these instructors appear in the dashboard's main views (By Region, By Manager, By Instructor) but are missing from campaign-level drill-downs and the By Cloud views — the Google Sheet does not include a per-cloud or per-campaign breakdown.</p>
+  </div>
+
+  <hr class="divider">
+  <p style="font-size:12px; color:#aaa; text-align:center;">Training &amp; Certification · Generated November 2026</p>
+
+</div>
+</body>
+</html>

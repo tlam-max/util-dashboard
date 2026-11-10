@@ -1491,14 +1491,14 @@ function impactGetMgr(instName) {
 function renderImpact() {
   const el = document.getElementById('tab-content');
 
-  // Filter rows (region + cloud; manager applied separately to leaderboard)
+  // Filter rows
   const filtered = IMPACT.data.filter(r => {
     if (impactRegionF !== 'ALL' && IMPACT.regions[r[1]] !== impactRegionF) return false;
     if (impactCloudF !== 'ALL' && IMPACT.clouds[r[4]] !== impactCloudF) return false;
     return true;
   });
 
-  // KPI
+  // KPIs
   const totalAtt = filtered.reduce((s, r) => s + r[5], 0);
   const sessions = filtered.length;
   const sessionsWithAtt = filtered.filter(r => r[5] > 0).length;
@@ -1511,8 +1511,8 @@ function renderImpact() {
 
   // By region
   const byRegion = {};
-  IMPACT.regions.forEach(r => byRegion[r] = 0);
-  filtered.forEach(r => { byRegion[IMPACT.regions[r[1]]] = (byRegion[IMPACT.regions[r[1]]]||0) + r[5]; });
+  IMPACT.regions.forEach(reg => byRegion[reg] = 0);
+  filtered.forEach(r => { const reg = IMPACT.regions[r[1]]; byRegion[reg] = (byRegion[reg]||0) + r[5]; });
 
   // By cloud
   const byCloud = {}, byCloudSessions = {};
@@ -1549,7 +1549,6 @@ function renderImpact() {
     if (r[5] > 0) byMgrSessions[mgr] = (byMgrSessions[mgr]||0) + 1;
   });
   const mgrsSorted = Object.keys(byMgr).filter(m => m !== 'Unassigned').sort((a,b) => byMgr[b]-byMgr[a]);
-  const allMgrs = ['ALL', ...mgrsSorted];
 
   const CLOUD_COLORS = {
     'Agentforce':'#00A1E0','Data 360':'#032D60','Tableau':'#E8701A',
@@ -1559,25 +1558,86 @@ function renderImpact() {
   };
   function cColor(c) { return CLOUD_COLORS[c] || '#94A3B8'; }
 
-  const regionMaxAtt = Math.max(...IMPACT.regions.map(r => byRegion[r]));
-
-  // Pill helper — generates correct assignment, not function call
-  function pills(items, current, varName) {
-    return items.map(v => {
-      const safe = v.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      const active = v === current ? ' active' : '';
-      return `<button class="filter-pill${active}" onclick="${varName}='${safe}';renderImpact()">${v==='ALL'?'All':v}</button>`;
-    }).join('');
+  // Pill helper — uses string concat only, no nested template literals
+  function pill(v, current, varName) {
+    const safe = v.replace(/'/g, "\\'");
+    const cls = 'filter-pill' + (v === current ? ' active' : '');
+    const label = v === 'ALL' ? 'All' : v;
+    return '<button class="' + cls + '" onclick="' + varName + '=\'' + safe + '\';renderImpact()">' + label + '</button>';
+  }
+  function pillRow(items, current, varName) {
+    return items.map(v => pill(v, current, varName)).join('');
   }
 
+  // Pre-build all HTML sections using string concatenation (avoids nested template literal breakage)
+  let regionBarsHtml = '';
+  const regMaxAtt = Math.max.apply(null, IMPACT.regions.map(reg => byRegion[reg])) || 1;
+  IMPACT.regions.filter(reg => byRegion[reg] > 0).sort((a,b) => byRegion[b]-byRegion[a]).forEach(reg => {
+    const pct = (byRegion[reg] / regMaxAtt * 100).toFixed(1);
+    regionBarsHtml += '<div style="margin-bottom:10px">';
+    regionBarsHtml += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">';
+    regionBarsHtml += '<span>' + reg + '</span><span style="color:var(--text-muted)">' + byRegion[reg].toLocaleString() + '</span></div>';
+    regionBarsHtml += '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">';
+    regionBarsHtml += '<div style="height:100%;width:' + pct + '%;background:var(--c-P);border-radius:4px"></div></div></div>';
+  });
+
+  let cloudBarsHtml = '';
+  const cloudMax = byCloud[cloudsSorted[0]] || 1;
+  cloudsSorted.slice(0,10).forEach(c => {
+    const pct = (byCloud[c] / cloudMax * 100).toFixed(1);
+    const avgSz = byCloudSessions[c] > 0 ? (byCloud[c]/byCloudSessions[c]).toFixed(1) : '—';
+    cloudBarsHtml += '<div style="margin-bottom:9px">';
+    cloudBarsHtml += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">';
+    cloudBarsHtml += '<span style="display:flex;align-items:center;gap:6px">';
+    cloudBarsHtml += '<span style="width:8px;height:8px;border-radius:50%;background:' + cColor(c) + ';display:inline-block"></span>' + c + '</span>';
+    cloudBarsHtml += '<span style="color:var(--text-muted)">' + byCloud[c].toLocaleString() + ' · avg ' + avgSz + '</span></div>';
+    cloudBarsHtml += '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
+    cloudBarsHtml += '<div style="height:100%;width:' + pct + '%;background:' + cColor(c) + ';border-radius:3px"></div></div></div>';
+  });
+
+  let mgrBarsHtml = '';
+  if (mgrsSorted.length === 0) {
+    mgrBarsHtml = '<div style="color:var(--text-muted);font-size:13px">No manager data</div>';
+  } else {
+    const mgrMax = byMgr[mgrsSorted[0]] || 1;
+    mgrsSorted.forEach(m => {
+      const pct = (byMgr[m] / mgrMax * 100).toFixed(1);
+      const avgSz = byMgrSessions[m] > 0 ? (byMgr[m]/byMgrSessions[m]).toFixed(1) : '—';
+      mgrBarsHtml += '<div style="margin-bottom:9px">';
+      mgrBarsHtml += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">';
+      mgrBarsHtml += '<span>' + m + '</span>';
+      mgrBarsHtml += '<span style="color:var(--text-muted)">' + byMgr[m].toLocaleString() + ' · avg ' + avgSz + '</span></div>';
+      mgrBarsHtml += '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
+      mgrBarsHtml += '<div style="height:100%;width:' + pct + '%;background:#6366F1;border-radius:3px"></div></div></div>';
+    });
+  }
+
+  let leaderboardRowsHtml = '';
+  instSorted.forEach((name, idx) => {
+    const att = byInst[name] || 0;
+    const sess = byInstSessions[name] || 0;
+    const avg = sess > 0 ? (att/sess).toFixed(1) : '—';
+    const mgr = impactGetMgr(name);
+    const ii = IMPACT.instructors.indexOf(name);
+    leaderboardRowsHtml += '<tr class="impact-inst-row" data-inst-idx="' + ii + '" style="border-bottom:1px solid var(--border-light,#f0f0f0);cursor:pointer" onmouseover="this.style.background=\'var(--surface-hover,#f5f7fa)\'" onmouseout="this.style.background=\'\'">';
+    leaderboardRowsHtml += '<td style="padding:6px 8px;color:var(--text-muted)">' + (idx+1) + '</td>';
+    leaderboardRowsHtml += '<td style="padding:6px 8px;font-weight:500;color:var(--c-P)">' + name + '</td>';
+    leaderboardRowsHtml += '<td style="padding:6px 8px;color:var(--text-muted);font-size:12px">' + mgr + '</td>';
+    leaderboardRowsHtml += '<td style="padding:6px 8px;text-align:right;font-weight:600">' + att.toLocaleString() + '</td>';
+    leaderboardRowsHtml += '<td style="padding:6px 8px;text-align:right">' + sess + '</td>';
+    leaderboardRowsHtml += '<td style="padding:6px 8px;text-align:right">' + avg + '</td></tr>';
+    leaderboardRowsHtml += '<tr class="impact-inst-detail" id="impact-detail-' + ii + '" style="display:none"><td colspan="6" style="padding:0"></td></tr>';
+  });
+
+  // Outer template literal is now safe — no nested backtick expressions
   el.innerHTML = `
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
       <span style="font-size:12px;color:var(--text-muted);font-weight:600">Region:</span>
-      <div class="filter-pills">${pills(['ALL',...IMPACT.regions], impactRegionF, 'impactRegionF')}</div>
+      <div class="filter-pills">${pillRow(['ALL'].concat(IMPACT.regions), impactRegionF, 'impactRegionF')}</div>
       <span style="font-size:12px;color:var(--text-muted);font-weight:600;margin-left:12px">Cloud:</span>
-      <div class="filter-pills">${pills(['ALL',...cloudsSorted], impactCloudF, 'impactCloudF')}</div>
+      <div class="filter-pills">${pillRow(['ALL'].concat(cloudsSorted), impactCloudF, 'impactCloudF')}</div>
       <span style="font-size:12px;color:var(--text-muted);font-weight:600;margin-left:12px">Manager:</span>
-      <div class="filter-pills">${pills(allMgrs, impactMgrF, 'impactMgrF')}</div>
+      <div class="filter-pills">${pillRow(['ALL'].concat(mgrsSorted), impactMgrF, 'impactMgrF')}</div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
@@ -1602,61 +1662,18 @@ function renderImpact() {
       </div>
       <div class="card" style="padding:16px">
         <h3 style="margin:0 0 12px;font-size:14px">Attendees by Region</h3>
-        ${IMPACT.regions.filter(r => byRegion[r] > 0).sort((a,b) => byRegion[b]-byRegion[a]).map(r => {
-          const pct = regionMaxAtt > 0 ? byRegion[r]/regionMaxAtt*100 : 0;
-          return `<div style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-              <span>\${r}</span><span style="color:var(--text-muted)">\${byRegion[r].toLocaleString()}</span>
-            </div>
-            <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-              <div style="height:100%;width:\${pct.toFixed(1)}%;background:var(--c-P);border-radius:4px"></div>
-            </div>
-          </div>`;
-        }).join('')}
+        ${regionBarsHtml}
       </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
       <div class="card" style="padding:16px">
         <h3 style="margin:0 0 12px;font-size:14px">Attendees by Cloud</h3>
-        ${cloudsSorted.slice(0,10).map(c => {
-          const cloudMax = byCloud[cloudsSorted[0]] || 1;
-          const pct = byCloud[c]/cloudMax*100;
-          const avgSz = byCloudSessions[c] > 0 ? (byCloud[c]/byCloudSessions[c]).toFixed(1) : '—';
-          return `<div style="margin-bottom:9px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-              <span style="display:flex;align-items:center;gap:6px">
-                <span style="width:8px;height:8px;border-radius:50%;background:\${cColor(c)};display:inline-block"></span>
-                \${c}
-              </span>
-              <span style="color:var(--text-muted)">\${byCloud[c].toLocaleString()} · avg \${avgSz}</span>
-            </div>
-            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:\${pct.toFixed(1)}%;background:\${cColor(c)};border-radius:3px"></div>
-            </div>
-          </div>`;
-        }).join('')}
+        ${cloudBarsHtml}
       </div>
       <div class="card" style="padding:16px">
         <h3 style="margin:0 0 12px;font-size:14px">By Manager Team</h3>
-        ${(() => {
-          const mgrMax = mgrsSorted.length > 0 ? (byMgr[mgrsSorted[0]] || 1) : 1;
-          return mgrsSorted.length === 0
-            ? '<div style="color:var(--text-muted);font-size:13px">No manager data</div>'
-            : mgrsSorted.map(m => {
-              const pct = byMgr[m]/mgrMax*100;
-              const avgSz = byMgrSessions[m] > 0 ? (byMgr[m]/byMgrSessions[m]).toFixed(1) : '—';
-              return `<div style="margin-bottom:9px">
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-                  <span>\${m}</span>
-                  <span style="color:var(--text-muted)">\${byMgr[m].toLocaleString()} · avg \${avgSz}</span>
-                </div>
-                <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
-                  <div style="height:100%;width:\${pct.toFixed(1)}%;background:#6366F1;border-radius:3px"></div>
-                </div>
-              </div>`;
-            }).join('');
-        })()}
+        ${mgrBarsHtml}
       </div>
     </div>
 
@@ -1677,30 +1694,11 @@ function renderImpact() {
             </tr>
           </thead>
           <tbody id="impact-leaderboard-body">
-            ${instSorted.map((name, idx) => {
-              const att = byInst[name] || 0;
-              const sess = byInstSessions[name] || 0;
-              const avg = sess > 0 ? (att/sess).toFixed(1) : '—';
-              const mgr = impactGetMgr(name);
-              const ii = IMPACT.instructors.indexOf(name);
-              return `<tr class="impact-inst-row" data-inst-idx="\${ii}" style="border-bottom:1px solid var(--border-light,#f0f0f0);cursor:pointer" onmouseover="this.style.background='var(--surface-hover,#f5f7fa)'" onmouseout="this.style.background=''">
-                <td style="padding:6px 8px;color:var(--text-muted)">\${idx+1}</td>
-                <td style="padding:6px 8px;font-weight:500;color:var(--c-P)">\${name}</td>
-                <td style="padding:6px 8px;color:var(--text-muted);font-size:12px">\${mgr}</td>
-                <td style="padding:6px 8px;text-align:right;font-weight:600">\${att.toLocaleString()}</td>
-                <td style="padding:6px 8px;text-align:right">\${sess}</td>
-                <td style="padding:6px 8px;text-align:right">\${avg}</td>
-              </tr>
-              <tr class="impact-inst-detail" id="impact-detail-\${ii}" style="display:none">
-                <td colspan="6" style="padding:0"></td>
-              </tr>`;
-            }).join('')}
+            ${leaderboardRowsHtml}
           </tbody>
         </table>
       </div>
     </div>
-
-    <div id="impact-inst-panel" style="display:none"></div>
   `;
 
   // Monthly chart
@@ -1732,13 +1730,10 @@ function renderImpact() {
       const ii = parseInt(row.dataset.instIdx);
       const detailRow = document.getElementById('impact-detail-' + ii);
       const isOpen = detailRow.style.display !== 'none';
-
-      // Close all open detail rows
       document.querySelectorAll('.impact-inst-detail').forEach(r => r.style.display = 'none');
-      document.querySelectorAll('.impact-inst-row').forEach(r => r.style.fontWeight = '');
-
+      document.querySelectorAll('.impact-inst-row').forEach(r => r.style.background = '');
       if (!isOpen) {
-        row.style.fontWeight = '700';
+        row.style.background = 'var(--surface-hover,#f5f7fa)';
         detailRow.style.display = '';
         detailRow.querySelector('td').innerHTML = impactBuildCampDetail(ii);
       }

@@ -152,9 +152,9 @@ tr:hover td{background:var(--bg)}
       <button class="tab-btn" data-tab="manager">By Manager</button>
       <button class="tab-btn" data-tab="instructor">By Instructor</button>
       <button class="tab-btn" data-tab="cloud">By Cloud</button>
+      <button class="tab-btn" data-tab="language">By Language</button>
       <button class="tab-btn" data-tab="subco">By Subco</button>
       <button class="tab-btn" data-tab="impact">By Impact</button>
-      <button class="tab-btn" data-tab="language">By Language</button>
     </div>
     <div id="tab-content"></div>
   </div>
@@ -1804,6 +1804,7 @@ const LANG_DATA = {"languages":["Czech","French","German","Italian","Japanese","
 // ── "By Language" state ─────────────────────────────────────────────────────
 let langLangF = 'ALL';
 let langCloudF = 'ALL';
+let langRegionF = 'ALL';
 
 // ── "By Language" render ────────────────────────────────────────────────────
 function renderLanguage() {
@@ -1830,6 +1831,7 @@ function renderLanguage() {
     if (langCloudF !== 'ALL') {
       if (!inst.certs.some(c => c.cloud === langCloudF)) return false;
     }
+    if (langRegionF !== 'ALL' && inst.region !== langRegionF) return false;
     return true;
   }
 
@@ -1949,14 +1951,19 @@ function renderLanguage() {
   // Build full HTML (no nested template literals)
   let html = '';
 
+  // Derive unique regions from LANG_DATA
+  const allRegions = [...new Set(LANG_DATA.instructors.map(i => i.region))].sort();
+
   // Filters
   html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">';
   html += '<span style="font-size:12px;color:var(--text-muted);font-weight:600">Language:</span>';
   html += '<div class="filter-pills">' + pillRow(['ALL'].concat(LANG_DATA.languages), langLangF, 'langLangF') + '</div>';
   html += '<span style="font-size:12px;color:var(--text-muted);font-weight:600;margin-left:12px">Cloud:</span>';
   html += '<div class="filter-pills">' + pillRow(['ALL'].concat(LANG_DATA.clouds), langCloudF, 'langCloudF') + '</div>';
-  if (langLangF !== 'ALL' || langCloudF !== 'ALL') {
-    html += '<button class="filter-pill" onclick="langLangF=\'ALL\';langCloudF=\'ALL\';renderLanguage()" style="margin-left:4px;opacity:0.7">✕ Clear</button>';
+  html += '<span style="font-size:12px;color:var(--text-muted);font-weight:600;margin-left:12px">Region:</span>';
+  html += '<div class="filter-pills">' + pillRow(['ALL'].concat(allRegions), langRegionF, 'langRegionF') + '</div>';
+  if (langLangF !== 'ALL' || langCloudF !== 'ALL' || langRegionF !== 'ALL') {
+    html += '<button class="filter-pill" onclick="langLangF=\'ALL\';langCloudF=\'ALL\';langRegionF=\'ALL\';renderLanguage()" style="margin-left:4px;opacity:0.7">✕ Clear</button>';
   }
   html += '</div>';
 
@@ -1968,6 +1975,77 @@ function renderLanguage() {
   html += '<div class="card" style="text-align:center;padding:16px 12px"><div style="font-size:1.8rem;font-weight:700;color:var(--risk)">' + pipelineCount + '</div><div style="font-size:11px;color:var(--text-muted);margin-top:3px">In Pipeline</div></div>';
   html += '</div>';
 
+  // ── Bar charts ──────────────────────────────────────────────────────────────
+  {
+    // Chart 1: Instructors by language (filtered by region/cloud)
+    const langBarData = LANG_DATA.languages.map(lang => {
+      const count = filteredInsts.filter(i => i.languages.includes(lang)).length;
+      return { label: lang, count };
+    }).filter(d => d.count > 0).sort((a,b) => b.count - a.count);
+
+    // Chart 2: Instructors by region (filtered by lang/cloud)
+    const regionBarData = allRegions.map(r => {
+      const count = filteredInsts.filter(i => i.region === r).length;
+      return { label: r, count };
+    }).filter(d => d.count > 0).sort((a,b) => b.count - a.count);
+
+    // Chart 3: Certs by cloud split certified vs pipeline (filtered)
+    const cloudBarData = LANG_DATA.clouds.map(cl => {
+      const certified = filteredInsts.reduce((s,i) => s + i.certs.filter(c => certMatches(c) && c.cloud === cl && c.status === 'Certified').length, 0);
+      const pipeline = filteredInsts.reduce((s,i) => s + i.certs.filter(c => certMatches(c) && c.cloud === cl && c.status !== 'Certified').length, 0);
+      return { label: cl, certified, pipeline, total: certified + pipeline };
+    }).filter(d => d.total > 0).sort((a,b) => b.total - a.total);
+
+    function barChart(title, rows, maxVal, renderBar) {
+      let ch = '<div class="card" style="padding:16px 18px">';
+      ch += '<div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">' + title + '</div>';
+      rows.forEach(row => {
+        ch += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">';
+        ch += '<div style="width:100px;min-width:100px;font-size:12px;color:var(--text2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + row.label + '</div>';
+        ch += '<div style="flex:1;position:relative;height:18px;background:var(--border);border-radius:3px;overflow:hidden">';
+        ch += renderBar(row, maxVal);
+        ch += '</div>';
+        ch += '<div style="font-size:12px;color:var(--text2);min-width:28px;text-align:right">' + (row.total !== undefined ? row.total : row.count) + '</div>';
+        ch += '</div>';
+      });
+      ch += '</div>';
+      return ch;
+    }
+
+    const maxLang = Math.max(...langBarData.map(d => d.count), 1);
+    const maxReg = Math.max(...regionBarData.map(d => d.count), 1);
+    const maxCloud = Math.max(...cloudBarData.map(d => d.total), 1);
+
+    let chartsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">';
+
+    chartsHtml += barChart('Instructors by Language', langBarData, maxLang, (row, mv) => {
+      const pct = Math.round(row.count / mv * 100);
+      return '<div style="position:absolute;top:0;left:0;height:100%;width:' + pct + '%;background:var(--c-P);border-radius:3px;transition:width .3s"></div>';
+    });
+
+    chartsHtml += barChart('Instructors by Region', regionBarData, maxReg, (row, mv) => {
+      const pct = Math.round(row.count / mv * 100);
+      return '<div style="position:absolute;top:0;left:0;height:100%;width:' + pct + '%;background:#0070d2;border-radius:3px;transition:width .3s"></div>';
+    });
+
+    chartsHtml += barChart('Certifications by Cloud', cloudBarData, maxCloud, (row, mv) => {
+      const certPct = Math.round(row.certified / mv * 100);
+      const pipePct = Math.round(row.pipeline / mv * 100);
+      return '<div style="position:absolute;top:0;left:0;height:100%;width:' + certPct + '%;background:var(--on);border-radius:3px 0 0 3px;transition:width .3s"></div>' +
+             '<div style="position:absolute;top:0;left:' + certPct + '%;height:100%;width:' + pipePct + '%;background:var(--risk);border-radius:0 3px 3px 0;transition:width .3s"></div>';
+    });
+
+    chartsHtml += '</div>';
+
+    // Legend for cloud chart
+    chartsHtml += '<div style="display:flex;gap:16px;font-size:11px;color:var(--text2);margin-bottom:20px;justify-content:flex-end">';
+    chartsHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--on)"></span>Certified</span>';
+    chartsHtml += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--risk)"></span>Pipeline</span>';
+    chartsHtml += '</div>';
+
+    html += chartsHtml;
+  }
+
   // Language overview cards (shown when no language filter, or single language detail)
   if (langLangF === 'ALL') {
     html += '<div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Language Coverage Overview <span style="font-size:11px;font-weight:400;color:var(--text3)">· click a card to filter</span></div>';
@@ -1978,6 +2056,7 @@ function renderLanguage() {
   html += '<div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Instructors';
   if (langLangF !== 'ALL') html += ' — ' + langLangF;
   if (langCloudF !== 'ALL') html += ' · ' + langCloudF;
+  if (langRegionF !== 'ALL') html += ' · ' + langRegionF;
   html += ' <span style="font-size:11px;font-weight:400;color:var(--text3)">· click a row to see course certifications</span></div>';
 
   html += '<div class="card" style="padding:0;overflow:hidden">';

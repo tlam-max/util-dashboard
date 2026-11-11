@@ -63,7 +63,12 @@
   </header>
 
   <div class="intro">
-    This table controls how every Authorization course code is assigned to a cloud in the <strong>By Language</strong> tab. <strong>Other is a permanent live category</strong> — any prefix not explicitly mapped stays there, and can be tracked, confirmed, or left as-is. SF Count = total Authorization records in T&amp;C Salesforce org for that prefix.
+    This table controls how every Authorization course code is assigned to a cloud in the <strong>By Language</strong>, <strong>By Cloud</strong>, and <strong>By Subco</strong> tabs. The authoritative field in T&amp;C Salesforce is <strong><code>Course__c.Primary_Product__c</code></strong> on each Course record. <strong>Other is a permanent live category</strong> — any prefix not explicitly mapped stays there and can be tracked, confirmed, or left as-is. SF Count = total Authorization records in T&amp;C Salesforce org for that prefix.
+  </div>
+
+  <div class="callout green">
+    <strong>Authoritative Salesforce report:</strong> <em>Course Code → Cloud Mapping Reference</em> &nbsp;·&nbsp; ID: <code>00OdK000003qKfFUAU</code> &nbsp;·&nbsp; Folder: Global Authorization Reports<br>
+    Grouped by <strong>Primary Product → Course Name</strong>. Open this report in the T&amp;C org to see every cert grouped by cloud, and to spot courses under the <em>(blank)</em> bucket that still need <code>Primary_Product__c</code> set. This report is the single source of truth — update it whenever a course's cloud changes.
   </div>
 
   <!-- ── Confirmed mappings ── -->
@@ -251,13 +256,16 @@
   <!-- ── How to update ── -->
   <h2>How to Update the Mapping</h2>
   <div class="callout green">
-    <strong>To map a prefix from "Other" to a cloud:</strong> add a note in the "Confirmed Cloud" column above, then tell the dashboard owner: <em>"map <code>XXX</code> prefix to [Cloud Name]"</em>. One-line change in <code>index.html</code> → push → live in ~1 minute. Then move the row from "Needs Confirmation" to "Confirmed Mappings" in this page.
+    <strong>Preferred path — update <code>Course__c.Primary_Product__c</code> in Salesforce:</strong> Set the Primary Product field on the Course record in the T&amp;C org. The <em>Course Code → Cloud Mapping Reference</em> report (ID: <code>00OdK000003qKfFUAU</code>) will immediately reflect the change. On the next dashboard data refresh, that course will move out of Other into the correct cloud.
   </div>
-  <ol style="font-size:13px;color:#444;padding-left:20px;line-height:2.2">
-    <li>Confirm the correct cloud using this page or by searching the course code in T&amp;C Salesforce</li>
-    <li>Tell the dashboard owner: <em>"map <code>PREFIX</code> to <strong>Cloud Name</strong>"</em></li>
-    <li>Dashboard updates within minutes — Other category will shrink accordingly</li>
-    <li>Update this reference page: move the row to Confirmed Mappings, update the SF Count</li>
+  <div class="callout amber" style="margin-top:8px">
+    <strong>Fallback — manual prefix mapping:</strong> If the Salesforce field cannot be updated right now, tell the dashboard owner: <em>"map <code>PREFIX</code> to [Cloud Name]"</em>. This adds a one-line rule to the prefix table in <code>index.html</code> → push → live in ~1 minute. Note: the Salesforce field should still be updated for long-term consistency.
+  </div>
+  <ol style="font-size:13px;color:#444;padding-left:20px;line-height:2.2;margin-top:10px">
+    <li>Open the <em>Course Code → Cloud Mapping Reference</em> report in T&amp;C Salesforce — look for the <em>(blank)</em> grouping</li>
+    <li>Set <code>Course__c.Primary_Product__c</code> on each course to the correct cloud</li>
+    <li>Rebuild and republish the dashboard — the Other category will shrink accordingly</li>
+    <li>Update this page: move the row from "Needs Confirmation" to "Confirmed Mappings", update the SF Count</li>
   </ol>
 
   <footer>Training &amp; Certification · FY27 · Course Mapping Reference · <a href="index.html" style="color:#0070d2">Back to dashboard</a></footer>

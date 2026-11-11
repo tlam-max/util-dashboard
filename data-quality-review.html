@@ -209,6 +209,64 @@
     </ul>
   </div>
 
+  <!-- 8 -->
+  <div class="section">
+    <div class="section-header"><span class="num">8</span><h2>Course Primary Product (By Language tab)</h2></div>
+    <div class="flag" style="margin-bottom:12px">
+      <strong>Data quality action required in T&amp;C Salesforce</strong>
+      The By Language tab classifies every Authorization record to a cloud using <code>Course__c.Primary_Product__c</code>. The courses below have this field blank — they currently fall into <strong>Other</strong> in the dashboard. A Salesforce admin needs to set <code>Primary_Product__c</code> on these Course records.
+      <br><br>
+      <strong>How to fix:</strong> In T&amp;C Salesforce, go to each Course record and set the <strong>Primary Product</strong> field to the correct cloud. Verify using the <strong>Course Code → Cloud Mapping Reference</strong> report (ID: <code>00OdK000003qKfFUAU</code> · Global Authorization Reports folder). The report groups all certs by Primary Product — courses under <em>(blank)</em> are the ones to fix.
+    </div>
+    <ul class="checks">
+      <li><input type="checkbox"><div>
+        <div class="main">BRE001 — Breakthrough: set Primary Product to <strong>Industries</strong></div>
+        <div class="hint">8 authorization records. Instructors: Gabriel Ostolaza Alfaro, Isabelle Faure, Lisa Tulchin</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">BSX101, BSX201 — Blazing Trails: set Primary Product to <strong>Platform</strong> or <strong>Sales Cloud</strong> (confirm with course owner — SF data shows both)</div>
+        <div class="hint">142 authorization records. Instructors include Gabriel Ostolaza Alfaro, Ingrid de Moraes, Isabelle Faure</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">CCM101 — Commerce Cloud Marketing: set Primary Product to <strong>Commerce Cloud</strong></div>
+        <div class="hint">76 authorization records. Instructors: Billy Flynn, Julián Aguilar</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">DGN001 — Design: set Primary Product to <strong>Industries</strong></div>
+        <div class="hint">5 authorization records. Instructor: Lisa Tulchin</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">LSC001–LSC005 — Life Sciences Cloud: set Primary Product to <strong>Industries</strong></div>
+        <div class="hint">21 authorization records. Instructors: Isabelle Faure, Mathias Artaud</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">MOC001–MOC004 — Marketing Cloud: set Primary Product to <strong>Marketing Cloud</strong></div>
+        <div class="hint">34 authorization records. Instructor: Laura Maffezzini</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">PDX001, PDX101 — Pardot / Marketing Cloud Account Engagement: set Primary Product to <strong>Marketing Cloud</strong></div>
+        <div class="hint">52 authorization records. Instructor: Laura Maffezzini</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">SFS001 — Field Service: set Primary Product to <strong>Service Cloud</strong> or <strong>Industries</strong> (confirm with course owner)</div>
+        <div class="hint">4 authorization records. Instructors: Christian Zapla, Isabelle Faure</div>
+      </div></li>
+      <li><input type="checkbox"><div>
+        <div class="main">SSC001–SSC006 — Agentforce for Sales / Sales Cloud: set Primary Product to <strong>Sales Cloud</strong></div>
+        <div class="hint">71 authorization records. Instructor: Christian Zapla</div>
+      </div></li>
+    </ul>
+    <div class="flag">
+      <strong>Verify in Salesforce</strong>
+      <ul>
+        <li>Open the <strong>Course Code → Cloud Mapping Reference</strong> report (ID: <code>00OdK000003qKfFUAU</code>) in T&amp;C Salesforce</li>
+        <li>Look for the <strong>(blank)</strong> grouping at the top — all courses there need Primary Product set</li>
+        <li>As each course is updated, it will move out of <em>(blank)</em> and into the correct cloud grouping</li>
+        <li>The dashboard Other category will shrink on the next data refresh once these fields are populated</li>
+      </ul>
+    </div>
+  </div>
+
   <hr>
 
   <!-- Escalate -->
@@ -225,6 +283,7 @@
           <tr><td>Wrong new hire ramp dates</td><td>Dashboard owner</td><td>Instructor name, correct start / 50% / 100% months</td></tr>
           <tr><td>APAC/LATAM mismatch vs. Google Sheet</td><td>Dashboard owner</td><td>Instructor, month(s), correct value from Sheet</td></tr>
           <tr><td>Attendee count wrong or missing</td><td>Ops / campaign data owner</td><td>Campaign name/ID, correct count</td></tr>
+          <tr><td>Course__c.Primary_Product__c blank (affects By Language tab cloud grouping)</td><td>Salesforce admin</td><td>Course code, correct cloud/product name — see checklist item 8</td></tr>
         </tbody>
       </table>
     </div>

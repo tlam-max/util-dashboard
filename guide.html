@@ -264,7 +264,7 @@
     <tr><td><strong>Total FY27 hours (to date)</strong></td><td>~57,100 hrs across all 72 instructors</td></tr>
     <tr><td><strong>Salesforce reports</strong></td><td>3 reports: FTE Util (Campaigns with Contacts with User), Subco Deliveries (CampaignList), FTE Attendee Impact (CampaignList)</td></tr>
     <tr><td><strong>Supplemental data</strong></td><td>Google Sheet &mdash; FY27 Event Util Days Matrix</td></tr>
-    <tr><td><strong>Dashboard tabs</strong></td><td>By Region · By Manager · By Instructor · By Cloud · By Subco · By Impact</td></tr>
+    <tr><td><strong>Dashboard tabs</strong></td><td>By Region · By Manager · By Instructor · By Cloud · By Language · By Subco · By Impact</td></tr>
   </table>
 </section>
 
@@ -699,6 +699,7 @@
     <tr><td>Manager dropdown</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
     <tr><td>Sort (column headers)</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
     <tr><td>Dark / Light mode</td><td>Header bar</td><td>Visual only</td></tr>
+    <tr><td>Language / Cloud / Region pills</td><td>By Language tab</td><td>By Language tab only — Cloud pill also toggles course-tile mode</td></tr>
     <tr><td>Region / Cloud / Company pills</td><td>By Subco tab</td><td>By Subco tab only</td></tr>
     <tr><td>Region / Cloud / Manager pills</td><td>By Impact tab</td><td>By Impact tab only</td></tr>
   </table>
@@ -715,6 +716,9 @@
   <div class="callout blue">
     <p><strong>Primary metric is days, not hours.</strong> Subco campaigns use <code>Campaign.Course_Days__c</code> as the volume metric rather than hours, because subco booking structures vary too widely across regions for hours to be a meaningful apples-to-apples comparison. Days are a cleaner, simpler indicator of delivery scale.</p>
   </div>
+  <div class="callout amber">
+    <p><strong>Cloud classification:</strong> Subco campaigns use the same prefix-based course code lookup as the By Cloud tab — <code>Campaign.Item_Id__c</code> prefix is matched against the cloud mapping table. Courses not yet classified appear in Other. See the <a href="course-mapping.html">Course Code → Cloud Mapping Reference</a> to add or update mappings.</p>
+  </div>
   <table>
     <tr><th>Salesforce field</th><th>Used for</th></tr>
     <tr><td><code>Campaign.Course_Days__c</code></td><td>Primary metric (days)</td></tr>
@@ -725,6 +729,32 @@
     <tr><td><code>Campaign.Region__c</code></td><td>Region filter</td></tr>
   </table>
   <p><strong>Salesforce report:</strong> Deliveries by Subcos FY27 — Leader Report &nbsp;|&nbsp; ID: <code>00OdK000003pKe5UAE</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> (standard Campaigns) &nbsp;|&nbsp; Grouped: Region → Month → Course</p>
+
+  <h3>By Language tab</h3>
+  <p>Shows the 20 FTE language-delivery instructors (EMEA + LATAM) who deliver content in a language other than English. This is a separate capability view, not a utilization view — it tracks which clouds and courses each instructor is certified or in-progress on, and gives a global picture of language coverage by cloud.</p>
+  <ul>
+    <li><strong>Languages covered:</strong> Czech, French, German, Italian, Portuguese, Russian, Slovak, Spanish. Japanese and Korean are excluded — those instructors are non-FTE contractors.</li>
+    <li><strong>Regions:</strong> AMER, EMEA, LATAM. Filter pills narrow the view to a single region.</li>
+    <li><strong>Bar charts (overview mode):</strong> three charts — Instructors by Language, Instructors by Region, and Certifications by Cloud (stacked: certified in green / pipeline in amber).</li>
+    <li><strong>Language Coverage Overview table:</strong> each row is an instructor. Columns show all languages they teach and each cloud they are certified or pipeline for. Click an instructor row to expand and see their cert detail.</li>
+    <li><strong>Cloud filter pills:</strong> clicking a cloud (e.g. Agentforce) switches the view to course-tile mode:
+      <ul>
+        <li>The Language Coverage table is replaced with course/workshop tiles — one per course — showing which languages cover that course and certified vs. pipeline counts.</li>
+        <li>The instructor table gains two extra columns: <strong>Certified</strong> (green badges, one per certified course) and <strong>Other Pipeline</strong> (status-coloured badges for in-progress/planned certs).</li>
+      </ul>
+    </li>
+    <li><strong>By Cloud click panel:</strong> clicking a cloud in the By Cloud tab shows a "By Language — Certified Courses" section, mapping each course to the languages it is covered in.</li>
+  </ul>
+  <div class="callout blue">
+    <p><strong>Cloud mapping for By Language:</strong> Each Authorization record's course is assigned to a cloud using the same prefix-based lookup as the By Cloud tab. Authoritative source is <code>Course__c.Primary_Product__c</code> in T&amp;C Salesforce, maintained via the <strong>Course Code → Cloud Mapping Reference</strong> report (ID: <code>00OdK000003qKfFUAU</code>) and the <a href="course-mapping.html">Course Code → Cloud Mapping Reference page</a>. Courses with a blank <code>Primary_Product__c</code> fall into the <strong>Other</strong> category until the field is updated or a manual prefix mapping is added.</p>
+  </div>
+  <table>
+    <tr><th>Data source</th><th>Used for</th></tr>
+    <tr><td>Authorization__c records (T&amp;C org)</td><td>Cert status per instructor per course — Certified, In Progress, Planned, Pre-Cert</td></tr>
+    <tr><td><code>Course__c.Primary_Product__c</code></td><td>Authoritative cloud assignment per course</td></tr>
+    <tr><td>Contact.Language__c / Contact.Region__c</td><td>Language and region per instructor</td></tr>
+    <tr><td>Course Code → Cloud Mapping Reference report</td><td>Grouped by Primary Product → Course Name — use to verify or update cloud assignments</td></tr>
+  </table>
 
   <h3>By Impact tab</h3>
   <p>Shows attendee reach for <strong>FTE-delivered campaigns only</strong> — how many people our instructors are connecting with. This tab is a scale and reach view, not a utilization view. Source: <code>Campaign.Attendee_Total__c</code> (a plain number field on Campaign, not a formula) filtered to <code>Delviery_Company__c = salesforce.com</code> (FTE campaigns only).</p>
@@ -827,6 +857,25 @@
     <tr><td>17</td><td>Mohina Sheikh</td><td>APAC</td></tr>
     <tr><td>18</td><td>Amanda Ortega</td><td>LATAM</td></tr>
   </table>
+
+  <h3>Report 4 — Course Code → Cloud Mapping Reference (By Language tab)</h3>
+  <p>Reference report for verifying and maintaining the course code → cloud classification used by the By Language tab (and by extension, By Cloud and By Subco tabs). Grouped by <code>Course__c.Primary_Product__c</code> then Course Name so you can see every course grouped under its cloud, and spot courses with a blank Primary Product.</p>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td><strong>Report name</strong></td><td>Course Code → Cloud Mapping Reference</td></tr>
+    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003qKfFUAU</code></td></tr>
+    <tr><td><strong>Folder</strong></td><td>Global Authorization Reports (<code>NAAuthorizationReports</code>)</td></tr>
+    <tr><td><strong>Report type</strong></td><td><code>ContactCustomEntity$Authorization__c@Authorization__c.Course__c</code> — joins Authorization → Course</td></tr>
+    <tr><td><strong>Grouped by</strong></td><td>Primary Product (<code>Course__c.Primary_Product__c</code>) → Course Name (<code>FK_NAME</code>)</td></tr>
+    <tr><td><strong>Columns</strong></td><td>Authorization Status, Instructor Name, Region</td></tr>
+    <tr><td><strong>Filters</strong></td><td>Certified Instructor, Active Contact, Salesforce Employee, Status ≠ Lapsed or Course Retired</td></tr>
+  </table>
+  <div class="callout blue">
+    <p><strong>How to use it:</strong> Open the report and look for the <em>(blank)</em> grouping at the top — that is every course where <code>Primary_Product__c</code> is not set. Those courses fall into "Other" in the dashboard until the field is filled in. See the <a href="course-mapping.html">Course Code → Cloud Mapping Reference page</a> for the full prefix mapping table and instructions on updating.</p>
+  </div>
+  <div class="callout amber">
+    <p><strong>Data quality dependency:</strong> This report and the By Language tab are only as accurate as <code>Course__c.Primary_Product__c</code> in the T&amp;C org. See the <a href="data-quality-review.html">Data Quality Checklist</a> for the specific list of course codes that need this field populated.</p>
+  </div>
 
   <h3>Report 2 — Subco Deliveries (By Subco tab)</h3>
   <p>Pulls external delivery partner (subcontractor) campaign data. Uses the standard <code>CampaignList</code> report type, filtered to campaigns <em>not</em> delivered by salesforce.com.</p>

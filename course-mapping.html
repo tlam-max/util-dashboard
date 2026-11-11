@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Code → Cloud Mapping Reference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; color: #1a1a2e; background: #f8f9fc; line-height: 1.6; }
+  .page { max-width: 960px; margin: 40px auto; padding: 0 24px 80px; }
+
+  header { margin-bottom: 32px; border-bottom: 3px solid #0070d2; padding-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 700; color: #0070d2; margin-bottom: 4px; }
+  header p { color: #666; font-size: 13px; }
+
+  .intro { background: #e8f4fd; border-left: 4px solid #0070d2; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-bottom: 28px; font-size: 14px; }
+
+  h2 { font-size: 13px; font-weight: 700; color: #1a1a2e; text-transform: uppercase; letter-spacing: 0.5px; margin: 28px 0 10px; border-bottom: 2px solid #eef1f6; padding-bottom: 6px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border: 1px solid #dde3ed; border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+  th { background: #f0f4fb; text-align: left; padding: 9px 14px; font-weight: 600; color: #444; border-bottom: 2px solid #dde3ed; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 9px 14px; border-bottom: 1px solid #f0f2f7; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fafd; }
+
+  .pfx { font-family: monospace; font-size: 13px; font-weight: 700; color: #1a1a2e; }
+  .sample { font-family: monospace; font-size: 11px; color: #555; }
+  .note { font-size: 11px; color: #888; margin-top: 2px; }
+  .count { font-size: 11px; color: #aaa; }
+
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
+  .b-agentforce  { background: #e8edf9; color: #2d4ab5; }
+  .b-aiforce     { background: #f3e8fd; color: #6b2da0; }
+  .b-commerce    { background: #e6f4ea; color: #1a7a4a; }
+  .b-data360     { background: #fce8f3; color: #a0147a; }
+  .b-industries  { background: #fff3cd; color: #8a6200; }
+  .b-marketing   { background: #fde8e8; color: #b52d2d; }
+  .b-mulesoft    { background: #e8f4fd; color: #005fb2; }
+  .b-other       { background: #f0f2f7; color: #555; }
+  .b-platform    { background: #dde8f5; color: #0050a0; }
+  .b-revenue     { background: #e8fdf4; color: #0a6b4a; }
+  .b-slack       { background: #fdf0e8; color: #b55a00; }
+  .b-tableau     { background: #f0e8fd; color: #5b00b5; }
+  .b-unknown     { background: #fff8e1; color: #7a5800; border: 1px dashed #f4d57a; }
+  .b-retired     { background: #f5f5f5; color: #999; }
+
+  .sfcount { display: inline-block; font-size: 10px; background: #eef1f6; color: #888; border-radius: 10px; padding: 1px 6px; margin-left: 6px; font-weight: 600; }
+
+  code { background: #eef1f6; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; color: #333; }
+  .callout { padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 13px; margin-bottom: 20px; }
+  .callout.amber { background: #fff8e1; border-left: 4px solid #f4b942; }
+  .callout.green { background: #e6f4ea; border-left: 4px solid #1a7a4a; }
+
+  footer { text-align: center; font-size: 12px; color: #bbb; margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Course Code → Cloud Mapping Reference</h1>
+    <p>Training &amp; Certification · FY27 · Source of truth for cloud assignment in the By Language dashboard tab</p>
+  </header>
+
+  <div class="intro">
+    This table controls how every Authorization course code is assigned to a cloud in the <strong>By Language</strong> tab. <strong>Other is a permanent live category</strong> — any prefix not explicitly mapped stays there, and can be tracked, confirmed, or left as-is. SF Count = total Authorization records in T&amp;C Salesforce org for that prefix.
+  </div>
+
+  <!-- ── Confirmed mappings ── -->
+  <h2>Confirmed Mappings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:130px">Prefix(es)</th>
+        <th style="width:160px">Cloud</th>
+        <th>Sample Course Codes</th>
+        <th style="width:80px">SF Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pfx">ADX, ADM, ANC, ARC, ASC, CRT, DEX, DEV</span></td>
+        <td><span class="badge b-platform">Platform</span></td>
+        <td><span class="sample">ADX201, ADX301, ANC201, ARC730, ASC001, CRT101, DEX401, DEX450, DEX701</span></td>
+        <td><span class="count">3,000+</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">AFS, AGT</span></td>
+        <td><span class="badge b-agentforce">Agentforce</span></td>
+        <td><span class="sample">AFS006, AFS008, AFS401, AGT201, AGT501–AGT505, AGT590</span></td>
+        <td><span class="count">401</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">AIF</span></td>
+        <td><span class="badge b-aiforce">AI Force</span></td>
+        <td><span class="sample">AIF001, AIF002</span></td>
+        <td><span class="count">36</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">B2B, B2C, CCD</span></td>
+        <td><span class="badge b-commerce">Commerce Cloud</span></td>
+        <td><span class="sample">B2B101, B2B110, B2C001, B2C002, CCD101, CCD102</span></td>
+        <td><span class="count">148</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">SDC</span></td>
+        <td><span class="badge b-data360">Data 360</span></td>
+        <td><span class="sample">SDC001–SDC021, SDC101, SDC301</span></td>
+        <td><span class="count">325</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">FSL, IND</span></td>
+        <td><span class="badge b-industries">Industries</span></td>
+        <td><span class="sample">FSL201, IND330</span></td>
+        <td><span class="count">59</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">MKT</span></td>
+        <td><span class="badge b-marketing">Marketing Cloud</span></td>
+        <td><span class="sample">MKT001–MKT004, MKT101, MKT201</span></td>
+        <td><span class="count">228</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">MAX, MSA, OPS</span></td>
+        <td><span class="badge b-mulesoft">MuleSoft</span></td>
+        <td><span class="sample">MAX150, MAX155, MSA001–MSA007, OPS325, OPS335, OPS350</span></td>
+        <td><span class="count">231</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">CPQ, OMS, REV</span></td>
+        <td><span class="badge b-revenue">Revenue Cloud</span></td>
+        <td><span class="sample">CPQ201, OMS001, OMS335, OMS435, REV001–REV012</span></td>
+        <td><span class="count">266</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">SLK</span></td>
+        <td><span class="badge b-slack">Slack</span></td>
+        <td><span class="sample">SLK001, SLK002, SLK004–SLK006</span></td>
+        <td><span class="count">17</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">DSF, TAB, TNX, TSA, TTD, TTP, TVA</span></td>
+        <td><span class="badge b-tableau">Tableau</span></td>
+        <td><span class="sample">DSF001, TAB004, TAB101, TNX001/002, TSA201, TTD001/101/201/301, TTP101, TVA101</span></td>
+        <td><span class="count">1,000+</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Needs confirmation ── -->
+  <h2>Needs Confirmation — tracked in "Other" until mapped</h2>
+  <div class="callout amber">
+    These prefixes exist in live cert records. They show under <strong>Other</strong> in the dashboard and will stay there until confirmed. Add the cloud in the rightmost column, tell the dashboard owner, and we'll move them to Confirmed above.
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:100px">Prefix</th>
+        <th>Sample Courses &amp; Instructors with this cert</th>
+        <th style="width:80px">SF Count</th>
+        <th style="width:180px">Confirmed Cloud (fill in)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pfx">BRE</span></td>
+        <td><span class="sample">BRE001</span><div class="note">Gabriel Ostolaza Alfaro, Isabelle Faure, Lisa Tulchin</div></td>
+        <td><span class="count">8</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">BSX</span></td>
+        <td><span class="sample">BSX101, BSX201</span><div class="note">Gabriel Ostolaza Alfaro, Ingrid de Moraes, Isabelle Faure</div></td>
+        <td><span class="count">142</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">CCM</span></td>
+        <td><span class="sample">CCM101</span><div class="note">Billy Flynn, Julián Aguilar</div></td>
+        <td><span class="count">76</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">DGN</span></td>
+        <td><span class="sample">DGN001</span><div class="note">Lisa Tulchin</div></td>
+        <td><span class="count">5</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">LSC</span></td>
+        <td><span class="sample">LSC001–LSC005</span><div class="note">Isabelle Faure, Mathias Artaud (French-speaking EMEA instructors)</div></td>
+        <td><span class="count">21</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">MOC</span></td>
+        <td><span class="sample">MOC001–MOC004</span><div class="note">Laura Maffezzini (Marketing Cloud specialist)</div></td>
+        <td><span class="count">34</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">PDX</span></td>
+        <td><span class="sample">PDX001, PDX101</span><div class="note">Laura Maffezzini (Marketing Cloud specialist)</div></td>
+        <td><span class="count">52</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">SFS</span></td>
+        <td><span class="sample">SFS001</span><div class="note">Christian Zapla, Isabelle Faure</div></td>
+        <td><span class="count">4</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">SSC</span></td>
+        <td><span class="sample">SSC001–SSC006</span><div class="note">Christian Zapla (Platform/Industries EMEA)</div></td>
+        <td><span class="count">71</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Retired / system ── -->
+  <h2>Excluded from Dashboard — Retired or System Records</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:130px">Prefix(es)</th>
+        <th>Reason</th>
+        <th style="width:80px">SF Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pfx">RETIRED, RETIRE, R</span></td>
+        <td><span class="badge b-retired">Retired</span> <span class="note" style="display:inline">Inactive course records — excluded from dashboard by Authorization_Status filter</span></td>
+        <td><span class="count">2,700+</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">OTHER, VIW, GHJK</span></td>
+        <td><span class="badge b-retired">System / Test</span> <span class="note" style="display:inline">Test/legacy records with no valid course code</span></td>
+        <td><span class="count">~135</span></td>
+      </tr>
+      <tr>
+        <td><span class="pfx">DDW, EEB, JB, RPT, RPX, STR, SAI, ICL, BLG, PDT, SPP</span></td>
+        <td><span class="badge b-retired">Not in FTE scope</span> <span class="note" style="display:inline">Present in Salesforce but none of the 20 current FTE language instructors hold these certs — will appear if an FTE is added who has them</span></td>
+        <td><span class="count">1,000+</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── How to update ── -->
+  <h2>How to Update the Mapping</h2>
+  <div class="callout green">
+    <strong>To map a prefix from "Other" to a cloud:</strong> add a note in the "Confirmed Cloud" column above, then tell the dashboard owner: <em>"map <code>XXX</code> prefix to [Cloud Name]"</em>. One-line change in <code>index.html</code> → push → live in ~1 minute. Then move the row from "Needs Confirmation" to "Confirmed Mappings" in this page.
+  </div>
+  <ol style="font-size:13px;color:#444;padding-left:20px;line-height:2.2">
+    <li>Confirm the correct cloud using this page or by searching the course code in T&amp;C Salesforce</li>
+    <li>Tell the dashboard owner: <em>"map <code>PREFIX</code> to <strong>Cloud Name</strong>"</em></li>
+    <li>Dashboard updates within minutes — Other category will shrink accordingly</li>
+    <li>Update this reference page: move the row to Confirmed Mappings, update the SF Count</li>
+  </ol>
+
+  <footer>Training &amp; Certification · FY27 · Course Mapping Reference · <a href="index.html" style="color:#0070d2">Back to dashboard</a></footer>
+</div>
+</body>
+</html>

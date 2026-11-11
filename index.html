@@ -2094,18 +2094,132 @@ function renderLanguage() {
     html += chartsHtml;
   }
 
-  // Language overview cards (shown when no language filter, or single language detail)
-  if (langLangF === 'ALL') {
+  // ── Course tiles (when a cloud is selected) OR Language overview ─────────────
+  if (langCloudF !== 'ALL') {
+    // Build course/workshop tiles for the selected cloud
+    const courseTileMap = {}; // course → {languages: [], instructorCount, certified: [], pipeline: []}
+    filteredInsts.forEach(inst => {
+      inst.certs.filter(c => c.cloud === langCloudF).forEach(c => {
+        if (!courseTileMap[c.course]) courseTileMap[c.course] = {languages: new Set(), certified: new Set(), pipeline: new Set()};
+        inst.languages.forEach(l => courseTileMap[c.course].languages.add(l));
+        if (c.status === 'Certified') courseTileMap[c.course].certified.add(inst.name);
+        else courseTileMap[c.course].pipeline.add(inst.name);
+      });
+    });
+    const courseTileEntries = Object.entries(courseTileMap)
+      .sort((a, b) => b[1].certified.size - a[1].certified.size || a[0].localeCompare(b[0]));
+
+    if (courseTileEntries.length) {
+      html += '<div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">' + langCloudF + ' — Courses &amp; Workshops';
+      html += ' <span style="font-size:11px;font-weight:400;color:var(--text3)">· language coverage per course</span></div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px">';
+      courseTileEntries.forEach(function(entry) {
+        var course = entry[0]; var data = entry[1];
+        var certCount = data.certified.size; var pipeCount = data.pipeline.size;
+        var langs = Array.from(data.languages).sort();
+        html += '<div class="card" style="padding:14px 16px">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">';
+        html += '<span style="font-size:14px;font-weight:700;color:var(--text)">' + course + '</span>';
+        html += '<span style="font-size:11px;color:var(--text3)">' + (certCount + pipeCount) + ' inst.</span>';
+        html += '</div>';
+        // Language badges
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';
+        langs.forEach(function(l) {
+          html += '<span style="font-size:11px;font-weight:600;background:var(--border);padding:2px 7px;border-radius:10px;color:var(--text2)">' + l + '</span>';
+        });
+        html += '</div>';
+        // Status mini-bar
+        html += '<div style="display:flex;gap:8px;font-size:11px">';
+        if (certCount) html += '<span style="color:var(--on);font-weight:600">' + certCount + ' certified</span>';
+        if (pipeCount) html += '<span style="color:var(--risk);font-weight:600">' + pipeCount + ' pipeline</span>';
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+  } else if (langLangF === 'ALL') {
     html += '<div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Language Coverage Overview <span style="font-size:11px;font-weight:400;color:var(--text3)">· click a card to filter</span></div>';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px">' + overviewHtml + '</div>';
   }
 
-  // Instructor table
+  // ── Instructor table ──────────────────────────────────────────────────────
+  const cloudSelected = langCloudF !== 'ALL';
+  // Rebuild table rows with cloud-specific course columns when a cloud is selected
+  let finalTableRowsHtml = '';
+  const colSpan = cloudSelected ? 5 : 6;
+  filteredInsts.forEach(function(inst) {
+    const instCerts = inst.certs.filter(certMatches).sort(function(a,b) {
+      return STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || a.course.localeCompare(b.course);
+    });
+    const certifiedCerts = instCerts.filter(function(c) { return c.status === 'Certified'; });
+    const pipelineCerts  = instCerts.filter(function(c) { return c.status !== 'Certified'; });
+    const instId = 'lang-inst-' + inst.name.replace(/[^a-z0-9]/gi,'_');
+    const byCloud = {};
+    instCerts.forEach(function(c) {
+      if (!byCloud[c.cloud]) byCloud[c.cloud] = [];
+      byCloud[c.cloud].push(c);
+    });
+
+    finalTableRowsHtml += '<tr class="lang-inst-row" onclick="toggleLangDetail(\'' + instId + '\')" style="cursor:pointer;border-bottom:1px solid var(--border)">';
+    finalTableRowsHtml += '<td style="padding:10px 12px;font-weight:600;color:var(--text)">' + inst.name + '</td>';
+    finalTableRowsHtml += '<td style="padding:10px 12px;font-size:12px;color:var(--text2)">' + inst.region + '</td>';
+    finalTableRowsHtml += '<td style="padding:10px 12px">';
+    inst.languages.filter(function(l) { return langLangF === 'ALL' || l === langLangF; }).forEach(function(l) {
+      finalTableRowsHtml += '<span style="font-size:11px;font-weight:700;background:var(--border);padding:2px 7px;border-radius:10px;color:var(--text2);margin-right:4px">' + l + '</span>';
+    });
+    finalTableRowsHtml += '</td>';
+
+    if (cloudSelected) {
+      // Certified courses column
+      finalTableRowsHtml += '<td style="padding:10px 12px;vertical-align:top">';
+      certifiedCerts.forEach(function(c) {
+        finalTableRowsHtml += '<span style="display:inline-block;font-size:11px;font-weight:600;background:rgba(26,122,74,0.1);color:#1a7a4a;border-radius:10px;padding:2px 7px;margin:2px 3px 2px 0">' + c.course + '</span>';
+      });
+      if (!certifiedCerts.length) finalTableRowsHtml += '<span style="font-size:11px;color:var(--text3)">—</span>';
+      finalTableRowsHtml += '</td>';
+      // Pipeline / other courses column
+      finalTableRowsHtml += '<td style="padding:10px 12px;vertical-align:top">';
+      pipelineCerts.forEach(function(c) {
+        const bg = STATUS_BADGE_BG[c.status] || 'rgba(137,135,129,0.1)';
+        const col = STATUS_COLOR[c.status] || '#898781';
+        finalTableRowsHtml += '<span style="display:inline-block;font-size:11px;font-weight:600;border-radius:10px;padding:2px 7px;margin:2px 3px 2px 0;background:' + bg + ';color:' + col + '" title="' + c.status + '">' + c.course + '</span>';
+      });
+      if (!pipelineCerts.length) finalTableRowsHtml += '<span style="font-size:11px;color:var(--text3)">—</span>';
+      finalTableRowsHtml += '</td>';
+    } else {
+      finalTableRowsHtml += '<td style="padding:10px 12px;text-align:center;font-weight:700;color:var(--on)">' + certifiedCerts.length + '</td>';
+      finalTableRowsHtml += '<td style="padding:10px 12px;text-align:center;font-weight:700;color:var(--risk)">' + pipelineCerts.length + '</td>';
+      finalTableRowsHtml += '<td style="padding:10px 12px;font-size:12px;color:var(--text2)">';
+      const cloudSet = [...new Set(instCerts.map(function(c) { return c.cloud; }))].sort();
+      cloudSet.forEach(function(cl) {
+        finalTableRowsHtml += '<span style="display:inline-block;margin-right:4px;font-size:11px">' + cl + '</span>';
+      });
+      finalTableRowsHtml += '</td>';
+    }
+    finalTableRowsHtml += '</tr>';
+
+    // Expand detail row
+    finalTableRowsHtml += '<tr id="' + instId + '" style="display:none"><td colspan="' + colSpan + '" style="padding:0 12px 12px 12px;background:var(--surface2,var(--surface))">';
+    Object.entries(byCloud).sort().forEach(function(pair) {
+      var cloud = pair[0]; var certs = pair[1];
+      finalTableRowsHtml += '<div style="margin-top:10px">';
+      finalTableRowsHtml += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:5px">' + cloud + '</div>';
+      finalTableRowsHtml += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
+      certs.forEach(function(c) {
+        const bg = STATUS_BADGE_BG[c.status] || 'rgba(137,135,129,0.1)';
+        const col = STATUS_COLOR[c.status] || '#898781';
+        finalTableRowsHtml += '<span style="font-size:12px;padding:3px 9px;border-radius:12px;background:' + bg + ';color:' + col + ';font-weight:600" title="' + c.status + (c.exp ? ' · ' + c.exp : '') + '">' + c.course + '</span>';
+      });
+      finalTableRowsHtml += '</div></div>';
+    });
+    finalTableRowsHtml += '</td></tr>';
+  });
+
   html += '<div style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text2)">Instructors';
   if (langLangF !== 'ALL') html += ' — ' + langLangF;
   if (langCloudF !== 'ALL') html += ' · ' + langCloudF;
   if (langRegionF !== 'ALL') html += ' · ' + langRegionF;
-  html += ' <span style="font-size:11px;font-weight:400;color:var(--text3)">· click a row to see course certifications</span></div>';
+  html += ' <span style="font-size:11px;font-weight:400;color:var(--text3)">· click a row to expand certifications</span></div>';
 
   html += '<div class="card" style="padding:0;overflow:hidden">';
   html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
@@ -2113,11 +2227,16 @@ function renderLanguage() {
   html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--text2);font-size:12px">Instructor</th>';
   html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--text2);font-size:12px">Region</th>';
   html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--text2);font-size:12px">Language(s)</th>';
-  html += '<th style="text-align:center;padding:8px 12px;font-weight:600;color:var(--on);font-size:12px">Certified</th>';
-  html += '<th style="text-align:center;padding:8px 12px;font-weight:600;color:var(--risk);font-size:12px">Pipeline</th>';
-  html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--text2);font-size:12px">Clouds</th>';
+  if (cloudSelected) {
+    html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--on);font-size:12px">Certified</th>';
+    html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--risk);font-size:12px">Other (Pipeline)</th>';
+  } else {
+    html += '<th style="text-align:center;padding:8px 12px;font-weight:600;color:var(--on);font-size:12px">Certified</th>';
+    html += '<th style="text-align:center;padding:8px 12px;font-weight:600;color:var(--risk);font-size:12px">Pipeline</th>';
+    html += '<th style="text-align:left;padding:8px 12px;font-weight:600;color:var(--text2);font-size:12px">Clouds</th>';
+  }
   html += '</tr></thead>';
-  html += '<tbody>' + tableRowsHtml + '</tbody>';
+  html += '<tbody>' + finalTableRowsHtml + '</tbody>';
   html += '</table></div>';
 
   el.innerHTML = html;

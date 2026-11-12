@@ -325,7 +325,7 @@ function aggByInst(months) {
 function total(tm) {
   if (!tm) return 0;
   if (rawTeach) {
-    return TYPES.filter(t=>t!=='T').reduce((s,t) => s+(tm[t]||0), 0);
+    return Math.round(TYPES.filter(t=>t!=='T').reduce((s,t) => s + toRaw(tm[t]||0), 0) * 10) / 10;
   }
   return TYPES.reduce((s,t) => s+(tm[t]||0), 0);
 }
@@ -417,7 +417,7 @@ function renderTrend(months) {
     label: TYPE_LBL[t],
     data: months.map(m => {
       const v = monthData[m][t]||0;
-      return Math.round(v);
+      return Math.round(rawTeach ? toRaw(v) : v);
     }),
     backgroundColor: C[t], stack:'s', borderWidth:0, borderRadius:2
   }));
@@ -2305,7 +2305,7 @@ function buildMonthlyChart(canvasId, monthData, monthTargets, onBarClick) {
   const visTypes2 = rawTeach ? TYPES.filter(t=>t!=='T') : TYPES;
   const datasets = visTypes2.map(t => ({
     label:TYPE_LBL[t],
-    data:D.fy_months.map(m => { const v=monthData[m][t]||0; return (Math.round(v)||null); }),
+    data:D.fy_months.map(m => { const v=monthData[m][t]||0; return (Math.round(rawTeach?toRaw(v):v)||null); }),
     backgroundColor:C[t], stack:'s', borderWidth:0, borderRadius:2
   }));
   datasets.push({
@@ -2499,7 +2499,7 @@ function openModal(inst) {
     if (fyIdx2 >= 0) {
       hrs = total(monthData[wym]);
     } else {
-      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym && (!rawTeach || r.t !== 'T') ) hrs += r.h; });
+      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym && (!rawTeach || r.t !== 'T') ) hrs += rawTeach ? toRaw(r.h) : r.h; });
     }
     // Per-month target (handles ramp for new hires; used only for each bar's individual % fill)
     const mTarget = effectiveTarget(inst, wym) || M2P_MONTHLY_TARGET;

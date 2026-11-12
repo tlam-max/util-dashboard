@@ -67,7 +67,7 @@
   </div>
 
   <div class="callout green">
-    <strong>Authoritative Salesforce report:</strong> <em>Course Code → Cloud Mapping Reference</em> &nbsp;·&nbsp; ID: <code>00OdK000003qKfFUAU</code> &nbsp;·&nbsp; Folder: Global Authorization Reports<br>
+    <strong>Authoritative Salesforce report:</strong> <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003qKfFUAU/view" target="_blank"><em>Course Code → Cloud Mapping Reference</em></a> &nbsp;·&nbsp; ID: <code>00OdK000003qKfFUAU</code> &nbsp;·&nbsp; Folder: Global Authorization Reports<br>
     Grouped by <strong>Primary Product → Course Name</strong>. Open this report in the T&amp;C org to see every cert grouped by cloud, and to spot courses under the <em>(blank)</em> bucket that still need <code>Primary_Product__c</code> set. This report is the single source of truth — update it whenever a course's cloud changes.
   </div>
 
@@ -256,7 +256,7 @@
   <!-- ── How to update ── -->
   <h2>How to Update the Mapping</h2>
   <div class="callout green">
-    <strong>Preferred path — update <code>Course__c.Primary_Product__c</code> in Salesforce:</strong> Set the Primary Product field on the Course record in the T&amp;C org. The <em>Course Code → Cloud Mapping Reference</em> report (ID: <code>00OdK000003qKfFUAU</code>) will immediately reflect the change. On the next dashboard data refresh, that course will move out of Other into the correct cloud.
+    <strong>Preferred path — update <code>Course__c.Primary_Product__c</code> in Salesforce:</strong> Set the Primary Product field on the Course record in the T&amp;C org. The <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003qKfFUAU/view" target="_blank"><em>Course Code → Cloud Mapping Reference</em> report</a> (ID: <code>00OdK000003qKfFUAU</code>) will immediately reflect the change. On the next dashboard data refresh, that course will move out of Other into the correct cloud.
   </div>
   <div class="callout amber" style="margin-top:8px">
     <strong>Fallback — manual prefix mapping:</strong> If the Salesforce field cannot be updated right now, tell the dashboard owner: <em>"map <code>PREFIX</code> to [Cloud Name]"</em>. This adds a one-line rule to the prefix table in <code>index.html</code> → push → live in ~1 minute. Note: the Salesforce field should still be updated for long-term consistency.

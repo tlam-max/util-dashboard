@@ -313,6 +313,11 @@
     <strong>7 · Utilization hours include a 30% prep multiplier</strong><br>
     Hours are not raw teaching time. Each delivery day is multiplied by <strong>1.3</strong> to credit instructors for preparation time. On-site deliveries also add <strong>16 travel hours</strong>. This means a 5-day course (40 hrs teaching) contributes 52 hrs utilization, plus travel if on-site. The Google Sheet column <em>Final_Util__c</em> is the field the dashboard sums.
   </div>
+
+  <div class="callout green">
+    <strong>8 · Use "Util: Teaching Only" to see actual customer-facing teach time</strong><br>
+    The <strong>Util: Teaching Only</strong> toggle (top-right header, next to New Hires) strips the 1.3× prep multiplier and removes travel days from all charts and numbers across every tab. The <strong>100 hrs/month target stays fixed</strong> in both modes — so in Teaching Only view you can directly see how close raw teaching hours alone bring each instructor to the target, and how much of their utilization is coming from the prep credit and travel allowance. Toggle back to <strong>Util: With Multiplier</strong> to return to the official utilization view.
+  </div>
 </section>
 
 <!-- ─── DATA SOURCES ─────────────────────────────────────────────────────── -->
@@ -692,6 +697,7 @@
   <table>
     <tr><th>Filter</th><th>Location</th><th>Scope</th></tr>
     <tr><td>Period (FY27 / Q1–Q4)</td><td>Header bar</td><td>All views — KPIs, charts, tables, modals</td></tr>
+    <tr><td>Util: With Multiplier / Teaching Only</td><td>Header bar</td><td>All views — strips 1.3× prep multiplier and travel from hours; target stays at 100/month</td></tr>
     <tr><td>New Hires: Remove / Removed</td><td>Header bar</td><td>All views including modals</td></tr>
     <tr><td>Region (click bar)</td><td>By Region tab</td><td>Filters By Manager tab to that region</td></tr>
     <tr><td>Search (instructor name)</td><td>By Instructor tab</td><td>Instructor table only</td></tr>
@@ -728,7 +734,7 @@
     <tr><td><code>Campaign.Item_Id__c</code></td><td>Course code, used to classify into cloud</td></tr>
     <tr><td><code>Campaign.Region__c</code></td><td>Region filter</td></tr>
   </table>
-  <p><strong>Salesforce report:</strong> Deliveries by Subcos FY27 — Leader Report &nbsp;|&nbsp; ID: <code>00OdK000003pKe5UAE</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> (standard Campaigns) &nbsp;|&nbsp; Grouped: Region → Month → Course</p>
+  <p><strong>Salesforce report:</strong> <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003pKe5UAE/view" target="_blank">Deliveries by Subcos FY27 — Leader Report</a> &nbsp;|&nbsp; ID: <code>00OdK000003pKe5UAE</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> (standard Campaigns) &nbsp;|&nbsp; Grouped: Region → Month → Course</p>
 
   <h3>By Language tab</h3>
   <p>Shows the 20 FTE language-delivery instructors (EMEA + LATAM) who deliver content in a language other than English. This is a separate capability view, not a utilization view — it tracks which clouds and courses each instructor is certified or in-progress on, and gives a global picture of language coverage by cloud.</p>
@@ -746,7 +752,7 @@
     <li><strong>By Cloud click panel:</strong> clicking a cloud in the By Cloud tab shows a "By Language — Certified Courses" section, mapping each course to the languages it is covered in.</li>
   </ul>
   <div class="callout blue">
-    <p><strong>Cloud mapping for By Language:</strong> Each Authorization record's course is assigned to a cloud using the same prefix-based lookup as the By Cloud tab. Authoritative source is <code>Course__c.Primary_Product__c</code> in T&amp;C Salesforce, maintained via the <strong>Course Code → Cloud Mapping Reference</strong> report (ID: <code>00OdK000003qKfFUAU</code>) and the <a href="course-mapping.html">Course Code → Cloud Mapping Reference page</a>. Courses with a blank <code>Primary_Product__c</code> fall into the <strong>Other</strong> category until the field is updated or a manual prefix mapping is added.</p>
+    <p><strong>Cloud mapping for By Language:</strong> Each Authorization record's course is assigned to a cloud using the same prefix-based lookup as the By Cloud tab. Authoritative source is <code>Course__c.Primary_Product__c</code> in T&amp;C Salesforce, maintained via the <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003qKfFUAU/view" target="_blank"><strong>Course Code → Cloud Mapping Reference</strong> report</a> (ID: <code>00OdK000003qKfFUAU</code>) and the <a href="course-mapping.html">Course Code → Cloud Mapping Reference page</a>. Courses with a blank <code>Primary_Product__c</code> fall into the <strong>Other</strong> category until the field is updated or a manual prefix mapping is added.</p>
   </div>
   <table>
     <tr><th>Data source</th><th>Used for</th></tr>
@@ -782,7 +788,7 @@
     <tr><td><code>Campaign.Type</code></td><td>Public / Workshop / Bootcamp / Other breakdown</td></tr>
     <tr><td><code>Campaign.Delviery_Company__c</code></td><td>Filter: only <code>salesforce.com</code> (FTE campaigns)</td></tr>
   </table>
-  <p><strong>Salesforce report for verification:</strong> FY27 Impact - Attendees by Region &nbsp;|&nbsp; ID: <code>00OdK000003pqhBUAQ</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> &nbsp;|&nbsp; Grouped: Region → Month &nbsp;|&nbsp; Grand total: 61,810 attendees</p>
+  <p><strong>Salesforce report for verification:</strong> <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003pqhBUAQ/view" target="_blank">FY27 Impact - Attendees by Region</a> &nbsp;|&nbsp; ID: <code>00OdK000003pqhBUAQ</code> &nbsp;|&nbsp; Report type: <code>CampaignList</code> &nbsp;|&nbsp; Grouped: Region → Month &nbsp;|&nbsp; Grand total: 61,810 attendees</p>
 </section>
 
 <!-- ─── SALESFORCE REPORT ──────────────────────────────────────────────────── -->
@@ -801,7 +807,7 @@
   <table>
     <tr><th>Field</th><th>Value</th></tr>
     <tr><td><strong>Report name</strong></td><td>FY27 NEW Delivery Util report*</td></tr>
-    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003ndmTUAQ</code></td></tr>
+    <tr><td><strong>Report ID</strong></td><td><a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003ndmTUAQ/view" target="_blank"><code>00OdK000003ndmTUAQ</code></a></td></tr>
     <tr><td><strong>Report type</strong></td><td>Campaigns with Contacts with User (<code>Campaigns_with_Contacts_with_User__c</code>) — custom report type that joins Campaign → Contact → User via Campaign Owner</td></tr>
     <tr><td><strong>Grouped by</strong></td><td>Region → User (instructor) → Campaign Type</td></tr>
     <tr><td><strong>Aggregates</strong></td><td>Sum of <code>Course_Days__c</code>, <code>Duration_Hours__c</code>, <code>Final_Util__c</code>, record count</td></tr>
@@ -863,7 +869,7 @@
   <table>
     <tr><th>Field</th><th>Value</th></tr>
     <tr><td><strong>Report name</strong></td><td>Course Code → Cloud Mapping Reference</td></tr>
-    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003qKfFUAU</code></td></tr>
+    <tr><td><strong>Report ID</strong></td><td><a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003qKfFUAU/view" target="_blank"><code>00OdK000003qKfFUAU</code></a></td></tr>
     <tr><td><strong>Folder</strong></td><td>Global Authorization Reports (<code>NAAuthorizationReports</code>)</td></tr>
     <tr><td><strong>Report type</strong></td><td><code>ContactCustomEntity$Authorization__c@Authorization__c.Course__c</code> — joins Authorization → Course</td></tr>
     <tr><td><strong>Grouped by</strong></td><td>Primary Product (<code>Course__c.Primary_Product__c</code>) → Course Name (<code>FK_NAME</code>)</td></tr>
@@ -882,7 +888,7 @@
   <table>
     <tr><th>Field</th><th>Value</th></tr>
     <tr><td><strong>Report name</strong></td><td>Deliveries by Subcos FY27 — Leader Report</td></tr>
-    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003pKe5UAE</code></td></tr>
+    <tr><td><strong>Report ID</strong></td><td><a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003pKe5UAE/view" target="_blank"><code>00OdK000003pKe5UAE</code></a></td></tr>
     <tr><td><strong>Report type</strong></td><td><code>CampaignList</code> (standard Campaigns)</td></tr>
     <tr><td><strong>Grouped by</strong></td><td>Region → Month → Course (<code>Item_Id__c</code>)</td></tr>
     <tr><td><strong>Aggregates</strong></td><td>Sum of <code>Attendee_Total__c</code>, <code>Course_Days__c</code>, <code>Duration_Hours__c</code>, record count</td></tr>
@@ -899,7 +905,7 @@
   <table>
     <tr><th>Field</th><th>Value</th></tr>
     <tr><td><strong>Report name</strong></td><td>FY27 Impact - Attendees by Region</td></tr>
-    <tr><td><strong>Report ID</strong></td><td><code>00OdK000003pqhBUAQ</code></td></tr>
+    <tr><td><strong>Report ID</strong></td><td><a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003pqhBUAQ/view" target="_blank"><code>00OdK000003pqhBUAQ</code></a></td></tr>
     <tr><td><strong>Report type</strong></td><td><code>CampaignList</code> (standard Campaigns)</td></tr>
     <tr><td><strong>Grouped by</strong></td><td>Region → Month</td></tr>
     <tr><td><strong>Aggregates</strong></td><td>Sum of <code>Attendee_Total__c</code>, <code>Course_Days__c</code>, <code>Duration_Hours__c</code>, record count</td></tr>
@@ -995,8 +1001,8 @@
   <div class="talking-point">
     <div class="step">Step 3 &mdash; Trend and type mix</div>
     <div class="headline">What kinds of work are we doing, and how has volume trended?</div>
-    <div class="script">"The monthly chart shows how utilization has stacked up each month, broken out by delivery type. Public classes are our biggest driver, followed by workshops. Bootcamps and events — including conferences like TDX and Dreamforce — are in green. Travel hours are shown separately in amber, so they don't inflate the teaching picture."</div>
-    <div class="action">Point to the monthly chart. Call out any months with obvious dips or spikes (e.g. summer slow-down, conference peaks). Point to the donut chart to show the type mix.</div>
+    <div class="script">"The monthly chart shows how utilization has stacked up each month, broken out by delivery type. Public classes are our biggest driver, followed by workshops. Bootcamps and events — including conferences like TDX and Dreamforce — are in green. Travel hours are shown separately in amber, so they don't inflate the teaching picture. If you want to see just the actual customer-facing teach time — no prep credit, no travel — hit the 'Util: Teaching Only' toggle in the top right. The bars drop to show raw teaching hours while the 100/month target line stays put, so you can immediately see how much of each instructor's utilization is coming from the multiplier and travel allowance versus actual time in front of customers."</div>
+    <div class="action">Point to the monthly chart. Call out any months with obvious dips or spikes (e.g. summer slow-down, conference peaks). Toggle to Teaching Only to show the contrast — then toggle back. Point to the donut chart to show the type mix.</div>
   </div>
 
   <div class="talking-point">

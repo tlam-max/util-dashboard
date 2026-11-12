@@ -216,7 +216,7 @@
       <strong>Data quality action required in T&amp;C Salesforce</strong>
       The By Language tab classifies every Authorization record to a cloud using <code>Course__c.Primary_Product__c</code>. The courses below have this field blank — they currently fall into <strong>Other</strong> in the dashboard. A Salesforce admin needs to set <code>Primary_Product__c</code> on these Course records.
       <br><br>
-      <strong>How to fix:</strong> In T&amp;C Salesforce, go to each Course record and set the <strong>Primary Product</strong> field to the correct cloud. Verify using the <strong>Course Code → Cloud Mapping Reference</strong> report (ID: <code>00OdK000003qKfFUAU</code> · Global Authorization Reports folder). The report groups all certs by Primary Product — courses under <em>(blank)</em> are the ones to fix.
+      <strong>How to fix:</strong> In T&amp;C Salesforce, go to each Course record and set the <strong>Primary Product</strong> field to the correct cloud. Verify using the <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003qKfFUAU/view" target="_blank"><strong>Course Code → Cloud Mapping Reference</strong> report</a> (ID: <code>00OdK000003qKfFUAU</code> · Global Authorization Reports folder). The report groups all certs by Primary Product — courses under <em>(blank)</em> are the ones to fix.
     </div>
     <ul class="checks">
       <li><input type="checkbox"><div>
@@ -259,7 +259,7 @@
     <div class="flag">
       <strong>Verify in Salesforce</strong>
       <ul>
-        <li>Open the <strong>Course Code → Cloud Mapping Reference</strong> report (ID: <code>00OdK000003qKfFUAU</code>) in T&amp;C Salesforce</li>
+        <li>Open the <a href="https://tandc.lightning.force.com/lightning/r/Report/00OdK000003qKfFUAU/view" target="_blank"><strong>Course Code → Cloud Mapping Reference</strong> report</a> (ID: <code>00OdK000003qKfFUAU</code>) in T&amp;C Salesforce</li>
         <li>Look for the <strong>(blank)</strong> grouping at the top — all courses there need Primary Product set</li>
         <li>As each course is updated, it will move out of <em>(blank)</em> and into the correct cloud grouping</li>
         <li>The dashboard Other category will shrink on the next data refresh once these fields are populated</li>

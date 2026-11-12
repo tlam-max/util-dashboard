@@ -119,6 +119,7 @@ tr:hover td{background:var(--bg)}
       <button class="period-btn" data-period="Q3">Q3</button>
       <button class="period-btn" data-period="Q4">Q4</button>
     </div>
+    <button class="theme-btn" id="raw-btn" title="Toggle between utilization hours (with 1.3× prep multiplier + travel) and raw teaching hours only">Hrs: With Multiplier</button>
     <button class="theme-btn" id="nh-btn" title="Toggle new hire visibility">New Hires: Remove</button>
     <button class="theme-btn" id="theme-btn">&#9790; Dark</button>
   </div>
@@ -264,8 +265,14 @@ const COLORS = () => {
 };
 
 const MONTHLY_TARGET = 100;
+const MONTHLY_TARGET_RAW = Math.round(100 / 1.3 * 10) / 10; // ≈ 76.9 raw teaching hrs/mo
 // FY27 today = Nov 5, 2026 = 9 months elapsed; Q1-Q3 complete; Q4 just started
 const PACE_FRAC = {FY27: 9/12, Q1: 1.0, Q2: 1.0, Q3: 1.0, Q4: 0.06};
+
+let rawTeach = false; // toggle: show raw teaching hrs only (no travel, no 1.3x multiplier)
+
+// Convert a stored Final_Util hour value back to raw teaching hours (÷1.3)
+function toRaw(h) { return Math.round(h / 1.3 * 10) / 10; }
 
 let period = 'FY27';
 let tab = 'region';
@@ -299,7 +306,7 @@ function monthlyTarget(inst, m) {
 }
 
 function instTarget(inst, months) {
-  return months.reduce((s, m) => s + monthlyTarget(inst, m), 0);
+  return months.reduce((s, m) => s + effectiveTarget(inst, m), 0);
 }
 
 function aggByInst(months) {
@@ -317,7 +324,16 @@ function aggByInst(months) {
 
 function total(tm) {
   if (!tm) return 0;
+  if (rawTeach) {
+    // Exclude travel entirely; divide teaching types by 1.3 to reverse the multiplier
+    return Math.round(TYPES.filter(t=>t!=='T').reduce((s,t) => s + toRaw(tm[t]||0), 0) * 10) / 10;
+  }
   return TYPES.reduce((s,t) => s+(tm[t]||0), 0);
+}
+
+function effectiveTarget(inst, m) {
+  const t = monthlyTarget(inst, m);
+  return rawTeach ? Math.round(t / 1.3 * 10) / 10 : t;
 }
 
 function barColor(pct) {
@@ -334,7 +350,7 @@ function renderKPIs(months, byInst) {
   const totalHrs = Object.values(byInst).reduce((s,tm) => s+total(tm), 0);
   const pct = teamTarget > 0 ? totalHrs/teamTarget*100 : 0;
   const avg = active.length > 0 ? totalHrs/active.length : 0;
-  const periodTarget = months.length * MONTHLY_TARGET; // per instructor
+  const periodTarget = months.length * (rawTeach ? MONTHLY_TARGET_RAW : MONTHLY_TARGET); // per instructor
   const avgPct = periodTarget > 0 ? avg/periodTarget*100 : 0;
 
   const paceF = PACE_FRAC[period] || 1;
@@ -396,10 +412,15 @@ function renderTrend(months) {
     }
   }
   const labels = months.map(m => MONTH_LABEL[m]);
-  const targets = months.map(m => activeInstructors().reduce((s,i) => s + monthlyTarget(i,m), 0));
+  const targets = months.map(m => activeInstructors().reduce((s,i) => s + effectiveTarget(i,m), 0));
 
-  const datasets = TYPES.map(t => ({
-    label: TYPE_LBL[t], data: months.map(m => Math.round(monthData[m][t]||0)),
+  const visTypes = rawTeach ? TYPES.filter(t=>t!=='T') : TYPES;
+  const datasets = visTypes.map(t => ({
+    label: TYPE_LBL[t],
+    data: months.map(m => {
+      const v = monthData[m][t]||0;
+      return Math.round(rawTeach ? toRaw(v) : v);
+    }),
     backgroundColor: C[t], stack:'s', borderWidth:0, borderRadius:2
   }));
   datasets.push({
@@ -2283,8 +2304,10 @@ function buildMonthlyChart(canvasId, monthData, monthTargets, onBarClick) {
   const isDk = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridC = isDk ? '#2e3a4e':'#e2e6ed';
   const tickC = isDk ? '#c3c2b7':'#52514e';
-  const datasets = TYPES.map(t => ({
-    label:TYPE_LBL[t], data:D.fy_months.map(m=>Math.round(monthData[m][t]||0)||null),
+  const visTypes2 = rawTeach ? TYPES.filter(t=>t!=='T') : TYPES;
+  const datasets = visTypes2.map(t => ({
+    label:TYPE_LBL[t],
+    data:D.fy_months.map(m => { const v=monthData[m][t]||0; return (Math.round(rawTeach?toRaw(v):v)||null); }),
     backgroundColor:C[t], stack:'s', borderWidth:0, borderRadius:2
   }));
   datasets.push({
@@ -2433,7 +2456,7 @@ function openModal(inst) {
   const currYm = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');
   const elapsedMs = fyMonths.filter(m=>m<=currYm);
   const totYtd = elapsedMs.reduce((s,m)=>s+total(monthData[m]),0);
-  const expectedByNow = elapsedMs.reduce((s,m)=>s+monthlyTarget(inst,m),0);
+  const expectedByNow = elapsedMs.reduce((s,m)=>s+effectiveTarget(inst,m),0);
   const paceDelta = totYtd - expectedByNow;
   const paceColor = paceDelta>=0?'var(--on)':paceDelta>=-expectedByNow*0.1?'var(--risk)':'var(--behind)';
   const paceLabel = paceDelta>=0?'ahead of pace':paceDelta>=-expectedByNow*0.1?'slightly behind':'behind pace';
@@ -2478,10 +2501,10 @@ function openModal(inst) {
     if (fyIdx2 >= 0) {
       hrs = total(monthData[wym]);
     } else {
-      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym) hrs += r.h; });
+      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym && (!rawTeach || r.t !== 'T') ) hrs += rawTeach ? toRaw(r.h) : r.h; });
     }
     // Per-month target (handles ramp for new hires; used only for each bar's individual % fill)
-    const mTarget = monthlyTarget(inst, wym) || M2P_MONTHLY_TARGET;
+    const mTarget = effectiveTarget(inst, wym) || (rawTeach ? MONTHLY_TARGET_RAW : M2P_MONTHLY_TARGET);
     const isPast = wym < currYm;
     const isCurr = wym === currYm;
     const statusLbl = isPast ? 'Completed' : (isCurr ? 'Current' : 'Planned');
@@ -2500,21 +2523,21 @@ function openModal(inst) {
     m2pHtml += '</div>';
   });
 
-  // Denominator: prorated annual target = 1,200 × (window_months / 12)
-  // This is "proportion of annual target up to the last planned month"
-  const m2pProratedTarget = Math.round(1200 * m2pMonthCount / 12 * 10) / 10;
+  // Denominator: prorated annual target for the window months
+  const m2pAnnualBase = rawTeach ? Math.round(1200 / 1.3) : 1200;
+  const m2pProratedTarget = Math.round(m2pAnnualBase * m2pMonthCount / 12 * 10) / 10;
   const m2pPct = m2pProratedTarget > 0 ? m2pTotalHrs / m2pProratedTarget * 100 : 0;
   const m2pPctColor = m2pPct >= 90 ? 'var(--on)' : m2pPct >= 70 ? 'var(--risk)' : 'var(--behind)';
 
   let m2pSectionHtml = '';
   m2pSectionHtml += '<div style="margin-bottom:8px;margin-top:20px;display:flex;align-items:baseline;gap:10px">';
   m2pSectionHtml += '<span style="font-size:13px;font-weight:600;color:var(--text2)">Month to Plan</span>';
-  m2pSectionHtml += '<span style="font-size:11px;color:var(--text3)">FY start → current + 4 months ahead · ' + m2pMonthCount + ' months · 100 hrs/mo target</span>';
+  m2pSectionHtml += '<span style="font-size:11px;color:var(--text3)">FY start → current + 4 months ahead · ' + m2pMonthCount + ' months · ' + (rawTeach ? fmt(MONTHLY_TARGET_RAW) : '100') + ' hrs/mo target</span>';
   m2pSectionHtml += '</div>';
   m2pSectionHtml += '<div style="background:var(--surface2,var(--surface));border:1px solid var(--border);border-radius:8px;padding:14px 16px">';
   m2pSectionHtml += m2pHtml;
   m2pSectionHtml += '<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">';
-  m2pSectionHtml += '<div style="font-size:12px;color:var(--text3)">' + fmt(m2pTotalHrs) + ' hrs delivered &amp; planned / ' + fmt(m2pProratedTarget) + ' hrs prorated target (1,200 × ' + m2pMonthCount + '/12)</div>';
+  m2pSectionHtml += '<div style="font-size:12px;color:var(--text3)">' + fmt(m2pTotalHrs) + ' hrs delivered &amp; planned / ' + fmt(m2pProratedTarget) + ' hrs prorated target (' + m2pAnnualBase + ' × ' + m2pMonthCount + '/12)</div>';
   m2pSectionHtml += '<div style="font-size:14px;font-weight:700;color:' + m2pPctColor + '">' + fmtPct(m2pPct) + ' of prorated target</div>';
   m2pSectionHtml += '</div></div>';
 
@@ -2537,9 +2560,9 @@ function openModal(inst) {
     </div>
     <div id="month-detail" style="margin-top:14px"></div>`;
 
-  // Per-month target line: null (pre-join), 0 (ramp), 50 (50% phase), 100 (full)
+  // Per-month target line: null (pre-join), 0 (ramp), 50 or 76.9 (50% phase), 100 or 76.9 (full)
   const monthTargets = fyMonths.map(m => {
-    const t = monthlyTarget(inst, m);
+    const t = effectiveTarget(inst, m);
     return m < inst.start ? null : t;
   });
 
@@ -2609,7 +2632,7 @@ function openModal(inst) {
     const actData = [], tgtData = [], todayIdx = fyMonths.indexOf(currYm);
     fyMonths.forEach((m, idx) => {
       cumAct += total(monthData[m]);
-      cumTgt += monthlyTarget(inst, m);
+      cumTgt += effectiveTarget(inst, m);
       actData.push(cumAct);
       tgtData.push(cumTgt);
     });
@@ -2744,7 +2767,7 @@ function openManagerModal(mgr) {
       <tbody>${tableRows}</tbody>
     </table>`;
 
-  const monthTargets = fyMonths.map(m => team.reduce((s,i) => s + monthlyTarget(i,m), 0));
+  const monthTargets = fyMonths.map(m => team.reduce((s,i) => s + effectiveTarget(i,m), 0));
   document.getElementById('modal-legend').innerHTML = buildMonthlyChart('modal-chart', monthData, monthTargets);
 
   // Wire up name clicks to instructor modal
@@ -2784,6 +2807,17 @@ document.getElementById('modal-overlay').addEventListener('click', e=>{
   if (e.target===e.currentTarget) {
     closeModal();
   }
+});
+
+document.getElementById('raw-btn').addEventListener('click',()=>{
+  rawTeach = !rawTeach;
+  const btn = document.getElementById('raw-btn');
+  btn.textContent = rawTeach ? 'Hrs: Teaching Only' : 'Hrs: With Multiplier';
+  btn.style.opacity = rawTeach ? '0.6' : '1';
+  btn.title = rawTeach
+    ? 'Showing raw teaching hours only (no 1.3× prep multiplier, no travel). Click to switch back.'
+    : 'Showing utilization hours (1.3× prep multiplier + travel). Click to show teaching hours only.';
+  render();
 });
 
 document.getElementById('nh-btn').addEventListener('click',()=>{

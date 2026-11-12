@@ -119,7 +119,7 @@ tr:hover td{background:var(--bg)}
       <button class="period-btn" data-period="Q3">Q3</button>
       <button class="period-btn" data-period="Q4">Q4</button>
     </div>
-    <button class="theme-btn" id="raw-btn" title="Toggle between utilization hours (with 1.3× prep multiplier + travel) and raw teaching hours only">Util: With Multiplier</button>
+    <button class="theme-btn" id="raw-btn" title="Toggle between full utilization (teaching × 1.3 + travel) and teaching-only view (travel stripped, prep credit kept)">Util: With Multiplier</button>
     <button class="theme-btn" id="nh-btn" title="Toggle new hire visibility">New Hires: Remove</button>
     <button class="theme-btn" id="theme-btn">&#9790; Dark</button>
   </div>
@@ -269,7 +269,7 @@ const MONTHLY_TARGET_RAW = Math.round(100 / 1.3 * 10) / 10; // ≈ 76.9 raw teac
 // FY27 today = Nov 5, 2026 = 9 months elapsed; Q1-Q3 complete; Q4 just started
 const PACE_FRAC = {FY27: 9/12, Q1: 1.0, Q2: 1.0, Q3: 1.0, Q4: 0.06};
 
-let rawTeach = false; // toggle: show raw teaching hrs only (no travel, no 1.3x multiplier)
+let rawTeach = false; // toggle: show teaching hrs only (no travel; 1.3x prep credit kept)
 
 // Convert a stored Final_Util hour value back to raw teaching hours (÷1.3)
 function toRaw(h) { return Math.round(h / 1.3 * 10) / 10; }
@@ -325,8 +325,7 @@ function aggByInst(months) {
 function total(tm) {
   if (!tm) return 0;
   if (rawTeach) {
-    // Exclude travel entirely; divide teaching types by 1.3 to reverse the multiplier
-    return Math.round(TYPES.filter(t=>t!=='T').reduce((s,t) => s + toRaw(tm[t]||0), 0) * 10) / 10;
+    return TYPES.filter(t=>t!=='T').reduce((s,t) => s+(tm[t]||0), 0);
   }
   return TYPES.reduce((s,t) => s+(tm[t]||0), 0);
 }
@@ -418,7 +417,7 @@ function renderTrend(months) {
     label: TYPE_LBL[t],
     data: months.map(m => {
       const v = monthData[m][t]||0;
-      return Math.round(rawTeach ? toRaw(v) : v);
+      return Math.round(v);
     }),
     backgroundColor: C[t], stack:'s', borderWidth:0, borderRadius:2
   }));
@@ -2306,7 +2305,7 @@ function buildMonthlyChart(canvasId, monthData, monthTargets, onBarClick) {
   const visTypes2 = rawTeach ? TYPES.filter(t=>t!=='T') : TYPES;
   const datasets = visTypes2.map(t => ({
     label:TYPE_LBL[t],
-    data:D.fy_months.map(m => { const v=monthData[m][t]||0; return (Math.round(rawTeach?toRaw(v):v)||null); }),
+    data:D.fy_months.map(m => { const v=monthData[m][t]||0; return (Math.round(v)||null); }),
     backgroundColor:C[t], stack:'s', borderWidth:0, borderRadius:2
   }));
   datasets.push({
@@ -2500,10 +2499,10 @@ function openModal(inst) {
     if (fyIdx2 >= 0) {
       hrs = total(monthData[wym]);
     } else {
-      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym && (!rawTeach || r.t !== 'T') ) hrs += rawTeach ? toRaw(r.h) : r.h; });
+      D.records.forEach(r => { if (r.i === inst.i && r.ym === wym && (!rawTeach || r.t !== 'T') ) hrs += r.h; });
     }
     // Per-month target (handles ramp for new hires; used only for each bar's individual % fill)
-    const mTarget = effectiveTarget(inst, wym) || (rawTeach ? MONTHLY_TARGET_RAW : M2P_MONTHLY_TARGET);
+    const mTarget = effectiveTarget(inst, wym) || M2P_MONTHLY_TARGET;
     const isPast = wym < currYm;
     const isCurr = wym === currYm;
     const statusLbl = isPast ? 'Completed' : (isCurr ? 'Current' : 'Planned');
@@ -2531,7 +2530,7 @@ function openModal(inst) {
   let m2pSectionHtml = '';
   m2pSectionHtml += '<div style="margin-bottom:8px;margin-top:20px;display:flex;align-items:baseline;gap:10px">';
   m2pSectionHtml += '<span style="font-size:13px;font-weight:600;color:var(--text2)">Month to Plan</span>';
-  m2pSectionHtml += '<span style="font-size:11px;color:var(--text3)">FY start → current + 4 months ahead · ' + m2pMonthCount + ' months · ' + (rawTeach ? fmt(MONTHLY_TARGET_RAW) : '100') + ' hrs/mo target</span>';
+  m2pSectionHtml += '<span style="font-size:11px;color:var(--text3)">FY start → current + 4 months ahead · ' + m2pMonthCount + ' months · 100 hrs/mo target</span>';
   m2pSectionHtml += '</div>';
   m2pSectionHtml += '<div style="background:var(--surface2,var(--surface));border:1px solid var(--border);border-radius:8px;padding:14px 16px">';
   m2pSectionHtml += m2pHtml;
@@ -2814,8 +2813,8 @@ document.getElementById('raw-btn').addEventListener('click',()=>{
   btn.textContent = rawTeach ? 'Util: Teaching Only' : 'Util: With Multiplier';
   btn.style.opacity = rawTeach ? '0.6' : '1';
   btn.title = rawTeach
-    ? 'Showing raw teaching hours only (no 1.3× prep multiplier, no travel). Click to switch back.'
-    : 'Showing utilization hours (1.3× prep multiplier + travel). Click to show teaching hours only.';
+    ? 'Teaching-only view: travel stripped, 1.3× prep credit kept. Click to show full utilization.'
+    : 'Full utilization: teaching × 1.3 + travel. Click to show teaching-only view.';
   render();
 });
 
